@@ -14,6 +14,10 @@ class GeneratorTest extends FlatSpec with Matchers {
     BlocksParser.parse(s)
   }
 
+  //
+  // LISTS
+  //
+
   "A list with a single element" should "produce valid latex" in {
     val input = "|list\n  |item Foo"
     val parsed = parse(input)
@@ -87,6 +91,79 @@ class GeneratorTest extends FlatSpec with Matchers {
     val input = "|list\n  |*item"
     val parsed = parse(input)
     intercept[Exception](compile(parsed))
+  }
+
+  //
+  // Paragraphs
+  //
+
+
+
+  "a single paragraphs" should "produce a single paragraph" in {
+    val input = "this is\na paragraph"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be (s"\n$input")
+  }
+
+  "Several paraphraphs" should "be properly spaced" in {
+    val input = "this is\na paragraph\n\nthis is\nanother paragraph"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be (s"\n$input")
+  }
+
+  "A list with a single paragraph" should "produce a correct item" in {
+    val input = "|list\n  |item\n    This is a paragraph\n    More of the same"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be ("\\begin{itemize}\n\\item\n\nThis is a paragraph\nMore of the same\n\\end{itemize}")
+  }
+
+  //
+  // Sections
+  //
+
+  "A single section without any children or title" should "produce an empty section" in {
+    val input = "|section"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be ("\\section*{}")
+  }
+
+  "A single named section" should "work" in {
+    val input = "|section Foo Bar"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be ("\\section*{Foo Bar}")
+  }
+
+  "A single section with a paragraph next to it" should "not botch anything" in {
+    val input = "|section Foo\nThis is a\nParagraph woo!"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be ("\\section*{Foo}\n\nThis is a\nParagraph woo!")
+  }
+
+  "A list with a section directly as its parent" should "not compile" in {
+    val input = "|list\n  |section Foo"
+    val parsed = parse(input)
+
+    intercept[Exception](compile(parsed))
+  }
+
+  "A list with some text and a list as it's children" should "be fine" in {
+    val input = "|section Foo\n  Paragraph\n  |list\n    |* Item"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be ("\\section*{Foo}\nParagraph\n\\begin{itemize}\n\\item Item\n\\end{itemize}")
   }
 
   // TODO: See if you can throw other blocks into a list block

@@ -45,7 +45,7 @@ class ListBlock extends BlockGenerator {
 
     val lib = new ListItemBlock(ctx)
 
-    val results = block.childBlocks.map(b=>compile(b)(ctx.copy(generators = lib :: ctx.generators)))
+    val results = block.childBlocks.map(b=>lib.compile(b)(ctx.copy(generators = lib :: Nil)))
     sb.append(merge(results)._1)
     sb.append("\n")
 

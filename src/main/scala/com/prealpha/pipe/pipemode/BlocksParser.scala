@@ -34,7 +34,11 @@ object BlocksParser {
         lazy val startingBlock = !isEmpty && line.dropWhile(_.isWhitespace).head == '|'
 
         if (parsingText && (isEmpty || startingBlock)) {
-          parsingText = false;
+          val h = last.head
+          assert(h.instance == "_text")
+          // Remove the trailing newline
+          h.sb.delete(h.sb.size - 1, h.sb.size)
+          parsingText = false
         }
 
         if (!isEmpty && !startingBlock) {

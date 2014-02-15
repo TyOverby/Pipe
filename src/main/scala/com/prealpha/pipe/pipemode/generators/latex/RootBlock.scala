@@ -13,8 +13,11 @@ class RootBlock extends BlockGenerator{
     (total, EmptyResultContext)
   }
 
+  private def topLevel =
+    new ListBlock :: new SectionBlock :: new RawTextBlock :: Nil
+
   def force(block: Block): String = {
-    produce(block)(CompileContext(List(new ListBlock)))._1
+    produce(block)(CompileContext(topLevel))._1
   }
 
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean = false
