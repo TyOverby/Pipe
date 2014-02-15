@@ -28,6 +28,6 @@ class MathModeTest extends FlatSpec with Matchers {
     val parsed = parse(input)
     val output = compile(parsed)
 
-    println(output)
+    output should be ("\\begin{align*}\n\\dfrac{a+b}{c} \\\\\n\\dfrac{a}{c}+\\dfrac{b}{c}\n\\end{align*}")
   }
 }

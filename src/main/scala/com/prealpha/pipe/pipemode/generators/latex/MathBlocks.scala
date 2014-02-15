@@ -37,7 +37,7 @@ class EquationBlock extends BlockGenerator {
     else
       sb.append("\\end{align*}")
 
-    (sb.toString(), EmptyResultContext)
+    (sb.toString(), ResultContext(Set("amsmath")))
   }
 }
 

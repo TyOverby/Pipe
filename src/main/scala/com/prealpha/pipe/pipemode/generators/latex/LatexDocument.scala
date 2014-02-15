@@ -20,6 +20,19 @@ object LatexDocument {
     val rb = new RootBlock
     val (output, result) = rb.produce(parsed)(CompileContext(topLevel))
 
+    for (s <- result.imports) {
+      importsSb.append("\\usepackage{")
+        .append(s)
+        .append("}\n")
+    }
+
+
+    totalSb.append("\\documentclass[a4paper]{article}\n")
+    totalSb.append(importsSb)
+    totalSb.append("\\begin{document}\n")
+    totalSb.append(output)
+    totalSb.append("\n\\end{document}")
+
     totalSb.toString()
   }
 }

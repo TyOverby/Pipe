@@ -14,6 +14,7 @@ class MathParserTest extends FlatSpec with Matchers {
   it should "parse symbols" in {
     MathParser(":phi") should be (Some("\\phi"))
     MathParser(":alpha") should be (Some("\\alpha"))
+    MathParser(":sin(:theta)") should be (Some("\\sin\\left(\\theta\\right)"))
   }
 
   it should "handle vertical division" in {
