@@ -12,13 +12,9 @@ class RootBlock extends BlockGenerator{
     (total, EmptyResultContext)
   }
 
-  private def topLevel =
-    new ListBlock :: new SectionBlock :: new RawTextBlock ::
-    new BoldBlock :: new ItalicBlock :: new PreBlock ::
-    new EquationBlock :: Nil
 
   def force(block: Block): String = {
-    produce(block)(CompileContext(topLevel))._1
+    produce(block)(CompileContext(LatexDocument.topLevel))._1
   }
 
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean = false

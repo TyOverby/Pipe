@@ -4,9 +4,9 @@ case class CompileContext(generators: List[BlockGenerator],
                           settings: Map[Class[_],Map[String, String]] = Map())
 
 
-case class ResultContext()
+case class ResultContext(imports: Set[String])
 
-object EmptyResultContext extends ResultContext()
+object EmptyResultContext extends ResultContext(Set())
 
 trait BlockGenerator {
   def captures(block: Block)(implicit ctx: CompileContext): Boolean
@@ -28,7 +28,11 @@ trait BlockGenerator {
 
   final def merge(results: Seq[(String, ResultContext)]): (String, ResultContext) = {
     val strMerge = results.map(_._1).mkString("\n")
-    val resultMerge = EmptyResultContext
+
+    val contexts: Seq[Set[String]] = results.map(_._2.imports)
+    val combinedImports: Set[String] = contexts.fold(Set())((a, b) => a ++ b)
+    val resultMerge = ResultContext(combinedImports)
+
     (strMerge, resultMerge)
   }
 }
