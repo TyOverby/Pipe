@@ -14,7 +14,8 @@ class RootBlock extends BlockGenerator{
 
   private def topLevel =
     new ListBlock :: new SectionBlock :: new RawTextBlock ::
-    new BoldBlock :: new ItalicBlock :: new PreBlock :: Nil
+    new BoldBlock :: new ItalicBlock :: new PreBlock ::
+    new EquationBlock :: Nil
 
   def force(block: Block): String = {
     produce(block)(CompileContext(topLevel))._1
