@@ -18,6 +18,8 @@ object MathParser extends RegexParsers {
 
   def math: Parser[String] = phrase(spacedExpr.+) ^^ (_.mkString)
 
+  def normalChar: Parser[String] = "[^\\s/():!,;^_]".r
+
   def expr: Parser[String] = text | symbol | macro_ | binaryExpr
 
   def binaryExpr: Parser[String] = horizontalDivide | verticalDivide | superscript | subscript | basicExpr
@@ -56,7 +58,7 @@ object MathParser extends RegexParsers {
 
   def parenExpr: Parser[String] = "(" ~> spacedExpr.+ <~ ")" ^^ (_.mkString)
 
-  def normalExpr: Parser[String] = "[^\\s/():!,;^_]+".r
+  def normalExpr: Parser[String] = normalChar.+ ^^ (_.mkString)
 
   def spacedExpr: Parser[String] = whiteSpace.? ~> expr <~ whiteSpace.?
 
@@ -71,10 +73,10 @@ object MathParser extends RegexParsers {
     case str => s"\\text{$str}"
   }
 
-  def symbol: Parser[String] = ":" ~> (not(whiteSpace) ~> ".".r).* ^^ ("\\" + _.mkString)
+  def symbol: Parser[String] = ":" ~> normalChar.+ ^^ ("\\" + _.mkString)
 
   def macro_ : Parser[String] = new Parser[String] {
-    override def apply(in: Input): ParseResult[String] = ("!" ~> "[a-zA-Z0-9]+".r <~ "(").apply(in) match {
+    override def apply(in: Input): ParseResult[String] = ("!" ~> (normalChar.+ ^^ (_.mkString)) <~ "(").apply(in) match {
       case Error(msg, next) => Error(msg, next)
       case Failure(msg, next) => Failure(msg, next)
       case Success(result, next) =>
