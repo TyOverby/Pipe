@@ -171,9 +171,22 @@ class GeneratorTest extends FlatSpec with Matchers {
     val parsed = parse(input)
     val output = compile(parsed)
 
-    println(output)
+    output should be ("\\bfshape\nHi\n\\normalshape")
   }
 
-  // TODO: See if you can throw other blocks into a list block
-  // TODO: See if you can use a list element without
+  "The \"pre\" text block" should "wrap correctly" in {
+    val input = "|raw\n hello\n world\n     Woo"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be ("\\begin{verbatim}\nhello\nworld\n    Woo\n\\end{verbatim}")
+  }
+
+  "Verbatim mode " should "capture nested blocks" in {
+    val input = "|raw\n |foo Bar"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be ("\\begin{verbatim}\n|foo Bar\n\\end{verbatim}")
+  }
 }

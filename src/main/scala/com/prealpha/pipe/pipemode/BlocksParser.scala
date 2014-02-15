@@ -16,15 +16,23 @@ object BlocksParser {
     var parsingText = false
     val textBuilder = new StringBuilder
 
-    def insertNode(block: BlockBuilder, text: String) {
+    def insertNode(block: BlockBuilder) {
       while (stack.peek().level >= block.level) {
         stack.pop()
       }
       stack.peek().addChild(block)
-      stack.peek().appendText(text)
 
       stack.push(block)
       last = block :: last
+    }
+
+    def addLine(line: String, level: Int) {
+      for (b: BlockBuilder <-
+           scala.collection.JavaConversions.collectionAsScalaIterable(stack)){
+        if (b.level < level) {
+          b.addLine(line)
+        }
+      }
     }
 
     chunk.split("\n").foreach(line => {
@@ -33,11 +41,10 @@ object BlocksParser {
         lazy val isEmpty = line.forall(_.isWhitespace)
         lazy val startingBlock = !isEmpty && line.dropWhile(_.isWhitespace).head == '|'
 
+
         if (parsingText && (isEmpty || startingBlock)) {
           val h = last.head
           assert(h.instance == "_text")
-          // Remove the trailing newline
-          h.sb.delete(h.sb.size - 1, h.sb.size)
           parsingText = false
         }
 
@@ -45,19 +52,13 @@ object BlocksParser {
           if (parsingText) {
             val textNode = last.head
             assert(textNode.instance == "_text")
-            textNode.appendText(line + "\n")
           } else {
             parsingText = true
             val node = new BlockBuilder("_text", "", whitespaces)
-            node.appendText(line + "\n")
-            insertNode(node, line + "\n")
+            insertNode(node)
           }
-          break()
         }
 
-        if (isEmpty) {
-          break()
-        }
 
         if (startingBlock) {
           val rest = line.dropWhile(_.isWhitespace).tail
@@ -66,11 +67,14 @@ object BlocksParser {
           val params = rest.dropWhile(!_.isWhitespace).dropWhile(_.isWhitespace)
 
           val node = new BlockBuilder(ident, params, whitespaces)
-          insertNode(node, line + "\n")
-          break()
+          insertNode(node)
         }
 
-        assert(assertion = false, "could not parse\"" + line + "\"")
+
+        if (parsingText)
+          addLine(line, whitespaces + 1)
+        else
+          addLine(line, whitespaces)
 
       }
     })
