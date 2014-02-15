@@ -10,7 +10,7 @@ object MathParser extends RegexParsers {
 
   override def skipWhitespace = false
 
-  def math: Parser[String] = spacedExpr.+ ^^ {
+  def math: Parser[String] = phrase(spacedExpr.+) ^^ {
     case list => ("" /: list)(_ + _)
   }
 
