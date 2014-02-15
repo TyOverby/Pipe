@@ -68,6 +68,7 @@ object MathParser extends RegexParsers {
 
   def twoExprList: Parser[String ~ String] = (spacedExpr <~ ",") ~ spacedExpr
 
+  // TODO figure out how the hell quotation marks inside text will work
   def text: Parser[String] = "\"" ~> """[^"\n\r]*""".r <~ "\"" ^^ {
     case str => s"\\text{$str}"
   }
