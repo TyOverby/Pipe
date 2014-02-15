@@ -19,6 +19,12 @@ object MathParser extends RegexParsers {
   def notDivideExpr: Parser[String] = parenExpr | symbol | macro_ | normalExpr
 
   def spacedExpr: Parser[String] = whiteSpace.? ~> expr <~ whiteSpace.?
+
+  def exprList: Parser[List[String]] = spacedExpr ~ ("," ~> spacedExpr).* ^^ {
+    case head ~ tail => head :: tail
+  }
+
+  def twoExprList: Parser[String ~ String] = (spacedExpr <~ ",") ~ spacedExpr
   
   def normalExpr: Parser[String] = "[^\\s/():!,;]+".r
   
@@ -44,11 +50,7 @@ object MathParser extends RegexParsers {
 
   def macro_ : Parser[String] = sumMacro | prodMacro | integralMacro | limitMacro | sqrtMacro | matrixMacro | casesMacro
 
-  def exprList: Parser[List[String]] = spacedExpr ~ ("," ~> spacedExpr).* ^^ {
-    case head ~ tail => head :: tail
-  }
 
-  def twoExprList: Parser[String ~ String] = (spacedExpr <~ ",") ~ spacedExpr
 
   def sumMacro: Parser[String] = "!sum(" ~> twoExprList <~ ")" ^^ {
     case start ~ end => s"\\sum_{$start}{$end}"
@@ -75,7 +77,7 @@ object MathParser extends RegexParsers {
     case first ~ rest =>
       val list = first :: rest
       val flatRows = list.map {
-        case Nil => " \\\\ "
+        case Nil => ""
         case head :: tail => head + ("" /: tail)(_ + " & " + _)
       }
       val rowsStr = ("" /: flatRows)(_ + _ + " \\\\ ")
