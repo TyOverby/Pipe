@@ -4,7 +4,7 @@ import java.util
 import scala.util.control.Breaks._
 
 object BlocksParser {
-  def parse(chunk: String): Iterable[Block] = {
+  def parse(chunk: String): Block = {
     val root = new BlockBuilder("_root", "", -1)
 
     val stack = new util.Stack[BlockBuilder]
@@ -71,6 +71,6 @@ object BlocksParser {
       }
     })
 
-    root.asBlock.childBlocks
+    root.asBlock
   }
 }
