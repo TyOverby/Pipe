@@ -1,4 +1,4 @@
-package com.prealpha.pipe.pipemode
+package com.prealpha.pipe
 
 trait InlineModifier {
   def identifier: String

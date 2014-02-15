@@ -1,8 +1,8 @@
-package com.prealpha.pipe
+package com.prealpha.pipe.generators
 
 import org.scalatest._
-import com.prealpha.pipe.pipemode.{Block, BlocksParser}
-import com.prealpha.pipe.pipemode.generators.latex.RootBlock
+import com.prealpha.pipe.generators.latex.RootBlock
+import com.prealpha.pipe.{BlocksParser, Block}
 
 class GeneratorTest extends FlatSpec with Matchers {
   def compile(b: Block): String = {

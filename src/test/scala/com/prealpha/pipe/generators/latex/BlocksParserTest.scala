@@ -1,9 +1,9 @@
-package com.prealpha.pipe
+package com.prealpha.pipe.generators.latex
 
 import org.scalatest._
-import com.prealpha.pipe.pipemode.{Block, BlocksParser}
+import com.prealpha.pipe.{BlocksParser, Block}
 
-class PipemodeParserTest extends FlatSpec with Matchers {
+class BlocksParserTest extends FlatSpec with Matchers {
   def genTextBlock(text: String, args: String = "",
                    level: Int = 0, children: List[Block] = List()) =
     genPipeBlock("_text", args, level, List(text), children)

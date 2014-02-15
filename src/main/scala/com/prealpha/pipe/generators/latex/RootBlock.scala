@@ -1,9 +1,7 @@
-package com.prealpha.pipe.pipemode.generators.latex
+package com.prealpha.pipe.generators.latex
 
-import com.prealpha.pipe.pipemode._
-import com.prealpha.pipe.pipemode.Block
-import com.prealpha.pipe.pipemode.CompileContext
-import com.prealpha.pipe.pipemode.ResultContext
+import com.prealpha.pipe.Block
+import com.prealpha.pipe.generators._
 
 class RootBlock extends BlockGenerator{
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {

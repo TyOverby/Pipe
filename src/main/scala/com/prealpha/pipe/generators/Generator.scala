@@ -1,4 +1,6 @@
-package com.prealpha.pipe.pipemode
+package com.prealpha.pipe.generators
+
+import com.prealpha.pipe.Block
 
 case class CompileContext(generators: List[BlockGenerator],
                           settings: Map[Class[_],Map[String, String]] = Map())
@@ -19,7 +21,7 @@ trait BlockGenerator {
     }
 
     if (matching.size > 1) {
-      System.err.println(s"Multiple block Generators (${matching.toString()}) match ${block.toString()}. " +
+      System.err.println(s"Multiple block Generators (${matching.toString()}) match ${block.toString}. " +
       s"Going with ${matching.head.toString}")
     }
 

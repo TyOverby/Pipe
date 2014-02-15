@@ -1,10 +1,8 @@
-package com.prealpha.pipe.pipemode.generators.latex
+package com.prealpha.pipe.generators.latex
 
-import com.prealpha.pipe.pipemode._
-import com.prealpha.pipe.pipemode.Block
-import com.prealpha.pipe.pipemode.CompileContext
-import com.prealpha.pipe.pipemode.ResultContext
+import com.prealpha.pipe.Block
 import com.prealpha.pipe.MathParser
+import com.prealpha.pipe.generators._
 
 class EquationBlock extends BlockGenerator {
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean =
