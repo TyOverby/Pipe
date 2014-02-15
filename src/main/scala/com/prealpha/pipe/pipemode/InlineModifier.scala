@@ -13,15 +13,3 @@ object InlineModifier {
     // Search / Replace in the arguments list
 
 }
-
-
-/*
-This is some (|bold text |)
-
-some (|math x + y / z |)
-
-|title (|math e = m c^2 |)
-
-
- */
-
