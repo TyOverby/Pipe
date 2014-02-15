@@ -17,13 +17,13 @@ class MathParserTest extends FlatSpec with Matchers {
   }
 
   it should "handle vertical division" in {
-    MathParser("a + b / c") should be (Some("a + b / c"))
+    MathParser("a + b / c") should be (Some("a+b/c"))
   }
 
   it should "handle horizontal division" in {
-    MathParser("(a + b) / c") should be (Some("\\dfrac{a + b}{c}"))
-    MathParser("a + b / (c)") should be (Some("a + \\dfrac{b}{c}"))
-    MathParser("a + b / ((c))") should be (Some("a + \\dfrac{b}{(c)}"))
+    MathParser("(a + b) / c") should be (Some("\\dfrac{a+b}{c}"))
+    MathParser("a + b / (c)") should be (Some("a+\\dfrac{b}{c}"))
+    MathParser("a + b / ((c))") should be (Some("a+\\dfrac{b}{(c)}"))
   }
 
   it should "parse matrix macros" in {
