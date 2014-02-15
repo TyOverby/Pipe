@@ -24,7 +24,7 @@ object InlineParser extends RegexParsers {
           (normalElem <~ "|)").apply(in) match {
             // TODO the type annotation is only so that IntelliJ doesn't complain
             case Success(math: String, rest) => MathParser.apply(math) match {
-              case scala.util.Success(latex) => Success(latex, rest)
+              case scala.util.Success(latex) => Success("$" + latex + "$", rest)
               case scala.util.Failure(exception) => Failure(exception.getMessage, rest)
             }
             case NoSuccess(_, rest) => Failure(s"illegal nested inline within $result", rest)
