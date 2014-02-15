@@ -24,8 +24,8 @@ class EquationBlock extends BlockGenerator {
     // TODO: this is some broken code. Actually handle errors please
     val compiledLines =
       for {line <- block.childLines
-           compiled <- MathParser.apply(line)
-      } yield compiled
+           parseResult = MathParser(line)
+      } yield parseResult.get
 
     sb.append(compiledLines.mkString(" \\\\\n"))
 

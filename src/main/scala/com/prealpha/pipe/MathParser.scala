@@ -1,15 +1,17 @@
 package com.prealpha.pipe
 
 import scala.util.parsing.combinator.RegexParsers
+import scala.util.Try
 
 /*
  * The precedence of the various expression types is kind of unclear from the code.
  * basicExpr has the highest precedence, followed by binaryExpr and then expr.
  */
 object MathParser extends RegexParsers {
-  def apply(input: String): Option[String] = parse(math, input) match {
-    case Success(result, next) => Some(result)
-    case _ => None
+  // TODO: use a custom exception type?
+  def apply(input: String): Try[String] = parse(math, input) match {
+    case Success(result, next) => scala.util.Success(result)
+    case NoSuccess(msg, next) => scala.util.Failure(new Exception(msg))
   }
 
   override def skipWhitespace = false
