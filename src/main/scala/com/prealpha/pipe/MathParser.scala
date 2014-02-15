@@ -10,7 +10,7 @@ object MathParser extends RegexParsers {
 
   override def skipWhitespace = false
 
-  def math: Parser[String] = expr.+ ^^ {
+  def math: Parser[String] = spacedExpr.+ ^^ {
     case list => ("" /: list)(_ + _)
   }
 
@@ -44,13 +44,11 @@ object MathParser extends RegexParsers {
     case leftExpr ~ slash ~ rightExpr => leftExpr + slash + rightExpr
   }
 
-  def symbol: Parser[String] = ":" ~> not(whiteSpace).* ^^ {
+  def symbol: Parser[String] = ":" ~> (not(whiteSpace) ~> ".".r).* ^^ {
     case chars => "\\" + ("" /: chars)(_ + _)
   }
 
   def macro_ : Parser[String] = sumMacro | prodMacro | integralMacro | limitMacro | sqrtMacro | matrixMacro | casesMacro
-
-
 
   def sumMacro: Parser[String] = "!sum(" ~> twoExprList <~ ")" ^^ {
     case start ~ end => s"\\sum_{$start}{$end}"

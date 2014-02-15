@@ -11,6 +11,21 @@ class MathParserTest extends FlatSpec with Matchers {
     }) should be (Some(List("a", "b", "c")))
   }
 
+  it should "parse symbols" in {
+    MathParser(":phi") should be (Some("\\phi"))
+    MathParser(":alpha") should be (Some("\\alpha"))
+  }
+
+  it should "handle vertical division" in {
+    MathParser("a + b / c") should be (Some("a + b / c"))
+  }
+
+  it should "handle horizontal division" in {
+    MathParser("(a + b) / c") should be (Some("\\dfrac{a + b}{c}"))
+    MathParser("a + b / (c)") should be (Some("a + \\dfrac{b}{c}"))
+    MathParser("a + b / ((c))") should be (Some("a + \\dfrac{b}{(c)}"))
+  }
+
   it should "parse matrix macros" in {
     val matrix =
       """!matrix(
