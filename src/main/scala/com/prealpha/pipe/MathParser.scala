@@ -75,8 +75,8 @@ object MathParser extends RegexParsers {
 
   def macro_ : Parser[String] = new Parser[String] {
     override def apply(in: Input): ParseResult[String] = ("!" ~> "[a-zA-Z0-9]+".r <~ "(").apply(in) match {
-      case Failure(msg, next) => Failure(msg, next)
       case Error(msg, next) => Error(msg, next)
+      case Failure(msg, next) => Failure(msg, next)
       case Success(result, next) =>
         val parser = result match {
           case "sum" =>
