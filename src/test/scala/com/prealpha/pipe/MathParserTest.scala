@@ -28,19 +28,19 @@ class MathParserTest extends FlatSpec with Matchers {
   it should "handle horizontal division" in {
     MathParser("(a + b) / c") should be (Success("\\dfrac{a+b}{c}"))
     MathParser("a + b / (c)") should be (Success("a+\\dfrac{b}{c}"))
-    MathParser("a + b / ((c))") should be (Success("a+\\dfrac{b}{(c)}"))
+    MathParser("a + b / ((c))") should be (Success("a+\\dfrac{b}{\\left(c\\right)}"))
   }
 
   it should "handle superscripts" in {
     MathParser("2 ^ n") should be (Success("2^{n}"))
     MathParser("2 ^ (n + 1)") should be (Success("2^{n+1}"))
-    MathParser("(n + 1) ^ 2") should be (Success("(n+1)^{2}"))
+    MathParser("(n + 1) ^ 2") should be (Success("\\left(n+1\\right)^{2}"))
   }
 
   it should "handle subscripts" in {
     MathParser("n_2") should be (Success("n_{2}"))
     MathParser("k_(n+1)") should be (Success("k_{n+1}"))
-    MathParser("(n+1)_i") should be (Success("(n+1)_{i}")) // ok, this one is a bit contrived
+    MathParser("(n+1)_i") should be (Success("\\left(n+1\\right)_{i}")) // ok, this one is a bit contrived
   }
 
   it should "parse matrix macros" in {

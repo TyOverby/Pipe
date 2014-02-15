@@ -54,7 +54,7 @@ object MathParser extends RegexParsers {
       case leftExpr ~ uscore ~ rightExpr => s"$leftExpr$uscore{$rightExpr}"
     }
 
-  def basicExpr: Parser[String] = (parenExpr ^^ { "(" + _ + ")" }) | normalExpr
+  def basicExpr: Parser[String] = (parenExpr ^^ { "\\left(" + _ + "\\right)" }) | normalExpr
 
   def parenExpr: Parser[String] = "(" ~> spacedExpr.+ <~ ")" ^^ (_.mkString)
 
