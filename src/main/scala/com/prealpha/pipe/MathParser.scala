@@ -54,48 +54,58 @@ object MathParser extends RegexParsers {
     case chars => "\\" + ("" /: chars)(_ + _)
   }
 
-  def macro_ : Parser[String] = sumMacro | prodMacro | integralMacro | limitMacro | sqrtMacro | matrixMacro | casesMacro
-
-  def sumMacro: Parser[String] = "!sum(" ~> twoExprList <~ ")" ^^ {
-    case start ~ end => s"\\sum_{$start}{$end}"
-  }
-
-  def prodMacro: Parser[String] = "!prod(" ~> twoExprList <~ ")" ^^ {
-    case start ~ end => s"\\prod_{$start}{$end}"
-  }
-
-  def integralMacro: Parser[String] = "!integral(" ~> twoExprList <~ ")" ^^ {
-    case start ~ end => s"\\int_{$start}{$end}"
-  }
-
-  def limitMacro: Parser[String] = "!limit(" ~> twoExprList <~ ")" ^^ {
-    case variable ~ bound => s"\\lim_{$variable \\to $bound}"
-  }
-
-  def sqrtMacro: Parser[String] = "!sqrt(" ~> spacedExpr <~ ")" ^^ {
-    case root => s"\\sqrt{$root}"
-  }
-
-  def matrixMacro: Parser[String] =
-    "!matrix(" ~> (whiteSpace.? ~> exprList <~ whiteSpace.?) ~ (";" ~> whiteSpace.? ~> exprList <~ whiteSpace.?).* <~ ")" ^^ {
-    case first ~ rest =>
-      val list = first :: rest
-      val flatRows = list.map {
-        case Nil => ""
-        case head :: tail => head + ("" /: tail)(_ + " & " + _)
-      }
-      val rowsStr = ("" /: flatRows)(_ + _ + " \\\\ ")
-      val colCount = list.map(_.length).max
-      val colStr = "c" * colCount
-      s"\\left( \\begin{array}{$colStr} $rowsStr \\end{array} \\right)"
-  }
-
-  def casesMacro: Parser[String] =
-    "!cases(" ~>
-      (whiteSpace.? ~> twoExprList <~ whiteSpace.?) ~ ("," ~> whiteSpace.? ~> twoExprList <~ whiteSpace.?).* <~ ")" ^^ {
-      case head ~ tail =>
-        val list = head :: tail
-        val casesLines = ("" /: list)(_ + _ + "\\\\")
-        "\\left{" + casesLines
+  def macro_ : Parser[String] = new Parser[String] {
+    override def apply(in: Input): ParseResult[String] = ("!" ~> "[a-zA-Z0-9]+".r <~ "(").apply(in) match {
+      case Failure(msg, next) => Failure(msg, next)
+      case Error(msg, next) => Error(msg, next)
+      case Success(result, next) =>
+        val parser = result match {
+          case "sum" =>
+            twoExprList ^^ {
+              case start ~ end => s"\\sum_{$start}{$end}"
+            }
+          case "prod" =>
+            twoExprList ^^ {
+              case start ~ end => s"\\prod_{$start}{$end}"
+            }
+          case "integral" =>
+            twoExprList ^^ {
+              case start ~ end => s"\\int_{$start}{$end}"
+            }
+          case "limit" =>
+            twoExprList ^^ {
+              case variable ~ bound => s"\\lim_{$variable \\to $bound}"
+            }
+          case "sqrt" =>
+            spacedExpr ^^ {
+              case root => s"\\sqrt{$root}"
+            }
+          case "matrix" =>
+            (whiteSpace.? ~> exprList <~ whiteSpace.?) ~ (";" ~> whiteSpace.? ~> exprList <~ whiteSpace.?).* ^^ {
+              case first ~ rest =>
+                val list = first :: rest
+                val flatRows = list.map {
+                  case Nil => ""
+                  case head :: tail => head + ("" /: tail)(_ + " & " + _)
+                }
+                val rowsStr = ("" /: flatRows)(_ + _ + " \\\\ ")
+                val colCount = list.map(_.length).max
+                val colStr = "c" * colCount
+                s"\\left( \\begin{array}{$colStr} $rowsStr \\end{array} \\right)"
+            }
+          case "cases" =>
+            (whiteSpace.? ~> twoExprList <~ whiteSpace.?) ~ ("," ~> whiteSpace.? ~> twoExprList <~ whiteSpace.?).* ^^ {
+              case head ~ tail =>
+                val list = head :: tail
+                val casesLines = ("" /: list)(_ + _ + "\\\\")
+                "\\left{" + casesLines
+            }
+          case _ => null
+        }
+        if (parser != null)
+          (parser <~ ")").apply(next)
+        else
+          Failure(s"unrecognized macro $result", in.drop(1))
     }
+  }
 }
