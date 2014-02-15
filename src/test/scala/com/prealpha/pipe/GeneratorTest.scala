@@ -166,6 +166,14 @@ class GeneratorTest extends FlatSpec with Matchers {
     output should be ("\\section*{Foo}\nParagraph\n\\begin{itemize}\n\\item Item\n\\end{itemize}")
   }
 
+  "Bold and Italics" should "work or something" in {
+    val input = "|bold Hi"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    println(output)
+  }
+
   // TODO: See if you can throw other blocks into a list block
   // TODO: See if you can use a list element without
 }
