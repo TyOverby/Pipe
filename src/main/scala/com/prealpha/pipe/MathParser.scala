@@ -16,9 +16,7 @@ object MathParser extends RegexParsers {
 
   override def skipWhitespace = false
 
-  def math: Parser[String] = phrase(spacedExpr.+) ^^ {
-    case list => ("" /: list)(_ + _)
-  }
+  def math: Parser[String] = phrase(spacedExpr.+) ^^ (_.mkString)
 
   def expr: Parser[String] = text | symbol | macro_ | binaryExpr
 
@@ -56,9 +54,7 @@ object MathParser extends RegexParsers {
 
   def basicExpr: Parser[String] = (parenExpr ^^ { "(" + _ + ")" }) | normalExpr
 
-  def parenExpr: Parser[String] = "(" ~> spacedExpr.+ <~ ")" ^^ {
-    case list => ("" /: list)(_ + _)
-  }
+  def parenExpr: Parser[String] = "(" ~> spacedExpr.+ <~ ")" ^^ (_.mkString)
 
   def normalExpr: Parser[String] = "[^\\s/():!,;^_]+".r
 
@@ -75,9 +71,7 @@ object MathParser extends RegexParsers {
     case str => s"\\text{$str}"
   }
 
-  def symbol: Parser[String] = ":" ~> (not(whiteSpace) ~> ".".r).* ^^ {
-    case chars => "\\" + ("" /: chars)(_ + _)
-  }
+  def symbol: Parser[String] = ":" ~> (not(whiteSpace) ~> ".".r).* ^^ ("\\" + _.mkString)
 
   def macro_ : Parser[String] = new Parser[String] {
     override def apply(in: Input): ParseResult[String] = ("!" ~> "[a-zA-Z0-9]+".r <~ "(").apply(in) match {
@@ -109,20 +103,17 @@ object MathParser extends RegexParsers {
             (whiteSpace.? ~> exprList <~ whiteSpace.?) ~ (";" ~> whiteSpace.? ~> exprList <~ whiteSpace.?).* ^^ {
               case first ~ rest =>
                 val list = first :: rest
-                val flatRows = list.map {
-                  case Nil => ""
-                  case head :: tail => head + ("" /: tail)(_ + " & " + _)
-                }
-                val rowsStr = ("" /: flatRows)(_ + _ + " \\\\ ")
+                val flatRows = list.map("  " + _.mkString(" & "))
+                val rowsStr = flatRows.mkString(" \\\\\n")
                 val colCount = list.map(_.length).max
                 val colStr = "c" * colCount
-                s"\\left( \\begin{array}{$colStr} $rowsStr \\end{array} \\right)"
+                s"\\left( \\begin{array}{$colStr}\n$rowsStr\n\\end{array} \\right)"
             }
           case "cases" =>
             (whiteSpace.? ~> twoExprList <~ whiteSpace.?) ~ ("," ~> whiteSpace.? ~> twoExprList <~ whiteSpace.?).* ^^ {
               case head ~ tail =>
                 val list = head :: tail
-                val casesLines = ("" /: list)(_ + _ + "\\\\")
+                val casesLines = list.mkString("\\\\")
                 "\\left{" + casesLines
             }
           case _ => null

@@ -48,6 +48,11 @@ class MathParserTest extends FlatSpec with Matchers {
         |)
       """.stripMargin
     MathParser(matrix) should
-      be (Success("""\left( \begin{array}{ccc} a & b & c \\ d & e & f \\ g & h & i \\  \end{array} \right)"""))
+      be (Success(
+        """\left( \begin{array}{ccc}
+          |  a & b & c \\
+          |  d & e & f \\
+          |  g & h & i
+          |\end{array} \right)""".stripMargin))
   }
 }
