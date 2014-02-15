@@ -20,7 +20,7 @@ object MathParser extends RegexParsers {
 
   def spacedExpr: Parser[String] = whiteSpace.? ~> expr <~ whiteSpace.?
   
-  def normalExpr: Parser[String] = "[^\\s/():!]+".r
+  def normalExpr: Parser[String] = "[^\\s/():!,;]+".r
   
   def parenExpr: Parser[String] = "(" ~> whiteSpace.? ~> expr <~ whiteSpace.? <~ ")"
 
@@ -72,9 +72,13 @@ object MathParser extends RegexParsers {
 
   def matrixMacro: Parser[String] =
     "!matrix(" ~> (whiteSpace.? ~> exprList <~ whiteSpace.?) ~ (";" ~> whiteSpace.? ~> exprList <~ whiteSpace.?).* <~ ")" ^^ {
-    case head ~ tail =>
-      val list = head :: tail
-      val rowsStr = ("" /: list)(_ + _ + " \\\\ ")
+    case first ~ rest =>
+      val list = first :: rest
+      val flatRows = list.map {
+        case Nil => " \\\\ "
+        case head :: tail => head + ("" /: tail)(_ + " & " + _)
+      }
+      val rowsStr = ("" /: flatRows)(_ + _ + " \\\\ ")
       val colCount = list.map(_.length).max
       val colStr = "c" * colCount
       s"\\left( \\begin{array}{$colStr} $rowsStr \\end{array} \\right)"
