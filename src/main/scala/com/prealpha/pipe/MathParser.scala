@@ -4,7 +4,7 @@ import scala.util.parsing.combinator.RegexParsers
 
 /*
  * The precedence of the various expression types is kind of unclear from the code.
- * basicExpr has the highest precedence, followed by divideExpr and then expr.
+ * basicExpr has the highest precedence, followed by binaryExpr and then expr.
  */
 object MathParser extends RegexParsers {
   def apply(input: String): Option[String] = parse(math, input) match {
@@ -18,14 +18,15 @@ object MathParser extends RegexParsers {
     case list => ("" /: list)(_ + _)
   }
 
-  def expr: Parser[String] = symbol | macro_ | divideExpr
+  def expr: Parser[String] = text | symbol | macro_ | binaryExpr
 
-  def divideExpr: Parser[String] = horizontalDivide | verticalDivide | basicExpr
+  def binaryExpr: Parser[String] = horizontalDivide | verticalDivide | superscript | subscript | basicExpr
 
   def slash: Parser[String] = whiteSpace.? ~> "/" <~ whiteSpace.?
 
   def horizontalDivide: Parser[String] =
-    ((whiteSpace.? ~> parenExpr ~ slash ~ basicExpr <~ whiteSpace.?) |
+    ((whiteSpace.? ~> parenExpr ~ slash ~ parenExpr <~ whiteSpace.?) |
+      (whiteSpace.? ~> parenExpr ~ slash ~ basicExpr <~ whiteSpace.?) |
       (whiteSpace.? ~> basicExpr ~ slash ~ parenExpr <~ whiteSpace.?)) ^^ {
       case leftExpr ~ slash ~ rightExpr => "\\dfrac{" + leftExpr + "}{" + rightExpr + "}"
     }
@@ -34,13 +35,30 @@ object MathParser extends RegexParsers {
     case leftExpr ~ slash ~ rightExpr => leftExpr + slash + rightExpr
   }
 
+  def caret: Parser[String] = whiteSpace.? ~> "^" <~ whiteSpace.?
+
+  def superscript: Parser[String] =
+    ((whiteSpace.? ~> basicExpr ~ caret ~ parenExpr <~ whiteSpace.?) |
+      (whiteSpace.? ~> basicExpr ~ caret ~ basicExpr <~ whiteSpace.?)) ^^ {
+      case leftExpr ~ caret ~ rightExpr => s"$leftExpr^{$rightExpr}"
+    }
+
+  def uscore: Parser[String] = whiteSpace.? ~> "_" <~ whiteSpace.?
+
+  def subscript: Parser[String] =
+    ((whiteSpace.? ~> basicExpr ~ uscore ~ parenExpr <~ whiteSpace.?) |
+      (whiteSpace.? ~> basicExpr ~ uscore ~ basicExpr <~ whiteSpace.?)) ^^ {
+      // naturally, leftExpr_ is a valid identifier, so I can't use it directly
+      case leftExpr ~ uscore ~ rightExpr => s"$leftExpr$uscore{$rightExpr}"
+    }
+
   def basicExpr: Parser[String] = (parenExpr ^^ { "(" + _ + ")" }) | normalExpr
 
   def parenExpr: Parser[String] = "(" ~> spacedExpr.+ <~ ")" ^^ {
     case list => ("" /: list)(_ + _)
   }
 
-  def normalExpr: Parser[String] = "[^\\s/():!,;]+".r
+  def normalExpr: Parser[String] = "[^\\s/():!,;^_]+".r
 
   def spacedExpr: Parser[String] = whiteSpace.? ~> expr <~ whiteSpace.?
 
@@ -49,6 +67,10 @@ object MathParser extends RegexParsers {
   }
 
   def twoExprList: Parser[String ~ String] = (spacedExpr <~ ",") ~ spacedExpr
+
+  def text: Parser[String] = "\"" ~> """[^"\n\r]*""".r <~ "\"" ^^ {
+    case str => s"\\text{$str}"
+  }
 
   def symbol: Parser[String] = ":" ~> (not(whiteSpace) ~> ".".r).* ^^ {
     case chars => "\\" + ("" /: chars)(_ + _)

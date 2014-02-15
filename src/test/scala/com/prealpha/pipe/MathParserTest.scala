@@ -26,6 +26,18 @@ class MathParserTest extends FlatSpec with Matchers {
     MathParser("a + b / ((c))") should be (Some("a+\\dfrac{b}{(c)}"))
   }
 
+  it should "handle superscripts" in {
+    MathParser("2 ^ n") should be (Some("2^{n}"))
+    MathParser("2 ^ (n + 1)") should be (Some("2^{n+1}"))
+    MathParser("(n + 1) ^ 2") should be (Some("(n+1)^{2}"))
+  }
+
+  it should "handle subscripts" in {
+    MathParser("n_2") should be (Some("n_{2}"))
+    MathParser("k_(n+1)") should be (Some("k_{n+1}"))
+    MathParser("(n+1)_i") should be (Some("(n+1)_{i}")) // ok, this one is a bit contrived
+  }
+
   it should "parse matrix macros" in {
     val matrix =
       """!matrix(
