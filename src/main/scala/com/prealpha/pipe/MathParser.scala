@@ -3,30 +3,39 @@ package com.prealpha.pipe
 import scala.util.parsing.combinator.RegexParsers
 
 object MathParser extends RegexParsers {
-  def apply(input: String): ParseResult[String] = parse(expr, input)
+  def apply(input: String): Option[String] = parse(math, input) match {
+    case Success(result, next) => Some(result)
+    case _ => None
+  }
 
   override def skipWhitespace = false
 
-  def expr: Parser[String] = normalExpr | parenExpr | divideExpr | symbol | macro_
+  def math: Parser[String] = expr.+ ^^ {
+    case list => ("" /: list)(_ + _)
+  }
+
+  def expr: Parser[String] = notDivideExpr | divideExpr
+
+  def notDivideExpr: Parser[String] = parenExpr | symbol | macro_ | normalExpr
 
   def spacedExpr: Parser[String] = whiteSpace.? ~> expr <~ whiteSpace.?
   
-  def normalExpr: Parser[String] = "[^\\s/():!]*".r
+  def normalExpr: Parser[String] = "[^\\s/():!]+".r
   
   def parenExpr: Parser[String] = "(" ~> whiteSpace.? ~> expr <~ whiteSpace.? <~ ")"
 
-  def divideExpr: Parser[String] = verticalDivide | horizontalDivide
+  def divideExpr: Parser[String] = horizontalDivide | verticalDivide
 
   def slash: Parser[String] = whiteSpace.? ~> "/" <~ whiteSpace.?
 
-  def verticalDivide: Parser[String] = whiteSpace.? ~> normalExpr ~ slash ~ normalExpr <~ whiteSpace.? ^^ {
-    case leftExpr ~ slash ~ rightExpr => leftExpr + slash + rightExpr
-  }
-
   def horizontalDivide: Parser[String] =
     ((whiteSpace.? ~> parenExpr ~ slash ~ expr <~ whiteSpace.?) |
-     (whiteSpace.? ~> expr ~ slash ~ parenExpr <~ whiteSpace.?)) ^^ {
-    case leftExpr ~ slash ~ rightExpr => "\\dfrac{" + leftExpr + "}{" + rightExpr + "}"
+      (whiteSpace.? ~> notDivideExpr ~ slash ~ parenExpr <~ whiteSpace.?)) ^^ {
+      case leftExpr ~ slash ~ rightExpr => "\\dfrac{" + leftExpr + "}{" + rightExpr + "}"
+    }
+
+  def verticalDivide: Parser[String] = whiteSpace.? ~> notDivideExpr ~ slash ~ expr <~ whiteSpace.? ^^ {
+    case leftExpr ~ slash ~ rightExpr => leftExpr + slash + rightExpr
   }
 
   def symbol: Parser[String] = ":" ~> not(whiteSpace).* ^^ {
@@ -61,20 +70,14 @@ object MathParser extends RegexParsers {
     case root => s"\\sqrt{$root}"
   }
 
-  def matrixMacro: Parser[String] = "!matrix(" ~> whiteSpace.? ~> mrow.* <~ whiteSpace.? <~ ")" ^^ {
-    case rows =>
-      val unzipped = rows.unzip
-      val rowsStr = ("" /: unzipped._1)(_ + _)
-      val colCount: Int = unzipped._2.max
+  def matrixMacro: Parser[String] =
+    "!matrix(" ~> (whiteSpace.? ~> exprList <~ whiteSpace.?) ~ (";" ~> whiteSpace.? ~> exprList <~ whiteSpace.?).* <~ ")" ^^ {
+    case head ~ tail =>
+      val list = head :: tail
+      val rowsStr = ("" /: list)(_ + _ + " \\\\ ")
+      val colCount = list.map(_.length).max
       val colStr = "c" * colCount
-      s"\\left( \\begin{array}{$colStr} \\\\ $rowsStr \\end{array} \\right)"
-  }
-
-  def mrow: Parser[(String, Integer)] = whiteSpace.? ~> "!mrow(" ~> exprList <~ ")" <~ whiteSpace.? ^^ {
-    case Nil => ("\\\\", 0)
-    case head :: tail =>
-      val rowStr = head + ("" /: tail)(_ + " & " + _) + "\\\\"
-      (rowStr, tail.length + 1)
+      s"\\left( \\begin{array}{$colStr} $rowsStr \\end{array} \\right)"
   }
 
   def casesMacro: Parser[String] =
