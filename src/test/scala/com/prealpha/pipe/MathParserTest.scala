@@ -17,6 +17,10 @@ class MathParserTest extends FlatSpec with Matchers {
     MathParser(":alpha") should be (Success("\\alpha"))
   }
 
+  it should "parse parenthesized symbols" in {
+    MathParser("(:theta)") should be (Success("\\left(\\theta\\right)"))
+  }
+
   it should "handle vertical division" in {
     MathParser("a + b / c") should be (Success("a+b/c"))
   }
