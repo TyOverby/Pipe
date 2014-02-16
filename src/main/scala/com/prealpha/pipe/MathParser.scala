@@ -51,7 +51,7 @@ object MathParser extends RegexParsers {
 
   def superscript: Parser[String] =
     ((whiteSpace.? ~> basicExpr ~ caret ~ parenExpr <~ whiteSpace.?) |
-      (whiteSpace.? ~> basicExpr ~ caret ~ basicExpr <~ whiteSpace.?)) ^^ {
+      (whiteSpace.? ~> basicExpr ~ caret ~ normalChar <~ whiteSpace.?)) ^^ {
       case leftExpr ~ caret ~ rightExpr => s"$leftExpr^{$rightExpr}"
     }
 
@@ -59,7 +59,7 @@ object MathParser extends RegexParsers {
 
   def subscript: Parser[String] =
     ((whiteSpace.? ~> basicExpr ~ uscore ~ parenExpr <~ whiteSpace.?) |
-      (whiteSpace.? ~> basicExpr ~ uscore ~ basicExpr <~ whiteSpace.?)) ^^ {
+      (whiteSpace.? ~> basicExpr ~ uscore ~ normalChar <~ whiteSpace.?)) ^^ {
       // naturally, leftExpr_ is a valid identifier, so I can't use it directly
       case leftExpr ~ uscore ~ rightExpr => s"$leftExpr$uscore{$rightExpr}"
     }
