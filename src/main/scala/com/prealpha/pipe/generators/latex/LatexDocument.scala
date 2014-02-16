@@ -9,7 +9,7 @@ object LatexDocument {
     new ListBlock :: new SectionBlock :: new SubsectionBlock ::
       new RawTextBlock :: new BoldBlock :: new ItalicBlock ::
       new PreBlock :: new LatexBlock :: new EquationBlock ::
-      new DocumentBlock :: Nil
+      new DocumentBlock :: new MathBlock :: Nil
 
   def compile(markup: String): String = {
     val parsed = InlineParser(BlocksParser.parse(markup)).get
@@ -41,9 +41,13 @@ object LatexDocument {
     totalSb.append("\\documentclass[a4paper]{article}\n")
     totalSb.append(importsSb)
     totalSb.append(configSb)
+
     totalSb.append("\\begin{document}\n")
+
     totalSb.append(insideBodySb)
+
     totalSb.append(output)
+
     totalSb.append("\n\\end{document}")
 
     totalSb.toString()

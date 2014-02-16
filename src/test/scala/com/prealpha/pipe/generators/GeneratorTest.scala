@@ -190,4 +190,20 @@ class GeneratorTest extends FlatSpec with Matchers {
     output should be ("\\begin{verbatim}\n|foo Bar\n\\end{verbatim}")
   }
 
+  "math block mode" should "produce good results for a series of inline paragraph nodes" in {
+    val input = "|math a + b + c\n  x - y - z"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be ("\n$a + b + c$\n\n$x - y - z$")
+  }
+
+  it should "produce good results with an equation in the mix" in {
+    val input = "|math a + b + c\n  x - y - z\n  |equation\n    a^2+b^2=c^2"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    // TODO: fill this in
+    println(output)
+  }
 }
