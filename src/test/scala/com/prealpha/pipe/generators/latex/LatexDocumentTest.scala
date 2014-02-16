@@ -58,14 +58,13 @@ class LatexDocumentTest extends FlatSpec with Matchers {
         |          :log(n^(!sqrt(n))) :leq :log(2^(an))
         |          !sqrt(n) :log(n) :leq a n :log(2)
         |          n^(-1/2) :log(n) :leq a :log(2)
-        |        Taking the limit of the left-hand side as n :to :infty, we find
+        |        Taking the limit of the left-hand side as (|$ n :to :infty |), we find
         |        |equation =
         |          !limit(n, :infty) n^(-1/2) :log(n) = !limit(n, :infty) (:log(n))/(n^(1/2))
         |                                             = !limit(n, :infty) (1/n)/((1/2)n^(-1/2))
         |                                             = !limit(n, :infty) 2n^(-1/2)
         |                                             = 0.
         |        As (|$ n |) grows large, the left-hand side tends to zero while the right-hand side remains a positive constant. So we have shown that (|$ n^(!sqrt(n)) = O(2^(an)) |). Conversely, if the inequality were reversed it would not hold for large (|$ n |), even with the addition of a positive constant. It follows that (|$ n^(!sqrt(n)) :not= :Omega(2^(an)) |), so we must have (|$ n^(!sqrt(n)) = o(2^(an)) |).
-        |
         |
       """.stripMargin
     ))
