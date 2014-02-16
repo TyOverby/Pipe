@@ -25,11 +25,9 @@ class EquationBlock extends BlockGenerator {
     val alignedLines =
       for (line <- block.childLines)
         yield (line /: args)((line, aligner) => line.replace(aligner, "&" + aligner))
-
     val compiledLines =
-      for {line <- alignedLines
-           parseResult = MathParser(line)
-      } yield parseResult.get
+      for (line <- alignedLines)
+        yield MathParser(line).get
 
     sb.append(compiledLines.mkString(" \\\\\n"))
 

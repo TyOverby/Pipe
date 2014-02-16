@@ -26,7 +26,7 @@ object MathParser extends RegexParsers {
 
   def normalChar: Parser[String] = normalCharNoPunct | "," | ";"
 
-  def exprNoPunct: Parser[String] = text | symbol | macro_ | binaryExprNoPunct
+  def exprNoPunct: Parser[String] = symbol | macro_ | binaryExprNoPunct
 
   def expr: Parser[String] = exprNoPunct | binaryExpr
 
@@ -64,7 +64,7 @@ object MathParser extends RegexParsers {
       case leftExpr ~ uscore ~ rightExpr => s"$leftExpr$uscore{$rightExpr}"
     }
 
-  def basicExprNoPunct: Parser[String] = (parenExpr ^^ { "\\left(" + _ + "\\right)" }) | normalExprNoPunct
+  def basicExprNoPunct: Parser[String] = text | (parenExpr ^^ { "\\left(" + _ + "\\right)" }) | normalExprNoPunct
 
   def basicExpr: Parser[String] = basicExprNoPunct | normalExpr
 
@@ -84,9 +84,16 @@ object MathParser extends RegexParsers {
 
   def twoExprList: Parser[String ~ String] = (spacedExprNoPunct <~ ",") ~ spacedExprNoPunct
 
+  def text: Parser[String] = quotedText | hashtagText
+
   // TODO figure out how the hell quotation marks inside text will work
-  def text: Parser[String] = "\"" ~> """[^"\n\r]*""".r <~ "\"" ^^ {
+  def quotedText: Parser[String] = "\"" ~> """[^"\n\r]*""".r <~ "\"" ^^ {
     case str => s"\\text{$str}"
+  }
+
+  // the not(".".r) captures the end of string case
+  def hashtagText: Parser[String] = "#" ~> whiteSpace.? ~> """[^\n\r]*""".r <~ ("\n" | "\r" | not(".".r)) ^^ {
+    case str => s"&& \\text{$str}"
   }
 
   def symbol: Parser[String] = ":" ~> normalChar.+ ^^ ("\\" + _.mkString)
