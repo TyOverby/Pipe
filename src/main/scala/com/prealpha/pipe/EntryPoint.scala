@@ -6,7 +6,7 @@ object EntryPoint extends App {
   var hasLines = true
   val sb = new StringBuilder
 
-  while(hasLines) {
+  while (hasLines) {
     val line = Console.readLine()
     if (line == null) hasLines = false
     else sb.append(line)

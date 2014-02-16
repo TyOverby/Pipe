@@ -11,5 +11,4 @@ trait InlineModifier {
 object InlineModifier {
   def inlineReplace(b: Block)(implicit ctx: InlineContext): Block = ???
     // Search / Replace in the arguments list
-
 }
