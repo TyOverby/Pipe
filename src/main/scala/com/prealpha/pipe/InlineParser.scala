@@ -9,6 +9,22 @@ object InlineParser extends RegexParsers {
     case NoSuccess(msg, next) => scala.util.Failure(new Exception(msg))
   }
 
+  def apply(block: Block): Try[Block] = {
+    try {
+      val parsedArgLine = InlineParser(block.argLine).get
+      val parsedChildLines =
+        if (block.instance == "_text")
+          block.childLines.map(apply).map(_.get)
+        else
+          block.childLines
+      val parsedChildBlocks = block.childBlocks.map(apply).map(_.get)
+      val parsedBlock = Block(block.instance, parsedArgLine, block.level, parsedChildLines, parsedChildBlocks)
+      scala.util.Success(parsedBlock)
+    } catch {
+      case x: Exception => scala.util.Failure(x)
+    }
+  }
+
   def content: Parser[String] = phrase(elem.+) ^^ {
     case list => list.mkString
   }
