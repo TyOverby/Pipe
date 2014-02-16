@@ -92,7 +92,7 @@ object MathParser extends RegexParsers {
   def symbol: Parser[String] = ":" ~> normalChar.+ ^^ ("\\" + _.mkString)
 
   def macro_ : Parser[String] = new Parser[String] {
-    override def apply(in: Input): ParseResult[String] = ("!" ~> (normalChar.+ ^^ (_.mkString)) <~ "(").apply(in) match {
+    override def apply(in: Input): ParseResult[String] = ("!" ~> (normalChar.+ ^^ (_.mkString))).apply(in) match {
       case Error(msg, next) => Error(msg, next)
       case Failure(msg, next) => Failure(msg, next)
       case Success(result, next) =>
@@ -137,9 +137,10 @@ object MathParser extends RegexParsers {
           case _ => null
         }
         if (parser != null)
-          (parser <~ ")").apply(next)
+          ("(" ~> parser <~ ")").apply(next)
         else
-          Failure(s"unrecognized macro $result", in.drop(1))
+          // guess that this is a zero-argument command
+          Success(s"\\$result", next)
     }
   }
 }

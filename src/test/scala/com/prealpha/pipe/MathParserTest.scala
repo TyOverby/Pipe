@@ -59,4 +59,8 @@ class MathParserTest extends FlatSpec with Matchers {
           |  g & h & i
           |\end{array} \right)""".stripMargin))
   }
+
+  it should "parse zero-argument macros/commands" in {
+    MathParser("!sin(:theta)") should be (Success("\\sin \\left(\\theta\\right)"))
+  }
 }
