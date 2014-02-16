@@ -1,6 +1,6 @@
 package com.prealpha.pipe.generators.latex
 
-import com.prealpha.pipe.BlocksParser
+import com.prealpha.pipe.{InlineParser, BlocksParser}
 import com.prealpha.pipe.generators.CompileContext
 import scala.io.Source
 
@@ -11,7 +11,7 @@ object LatexDocument {
       new PreBlock :: new EquationBlock :: Nil
 
   def compile(markup: String): String = {
-    val parsed = BlocksParser.parse(markup)
+    val parsed = InlineParser(BlocksParser.parse(markup)).get
 
     val totalSb = new StringBuilder
 
