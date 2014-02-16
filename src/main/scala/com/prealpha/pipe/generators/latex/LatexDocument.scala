@@ -8,7 +8,8 @@ object LatexDocument {
   def topLevel =
     new ListBlock :: new SectionBlock :: new SubsectionBlock ::
       new RawTextBlock :: new BoldBlock :: new ItalicBlock ::
-      new PreBlock :: new EquationBlock :: new DocumentBlock :: Nil
+      new PreBlock :: new LatexBlock :: new EquationBlock ::
+      new DocumentBlock :: Nil
 
   def compile(markup: String): String = {
     val parsed = InlineParser(BlocksParser.parse(markup)).get

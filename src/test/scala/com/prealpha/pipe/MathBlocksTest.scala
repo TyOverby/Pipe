@@ -29,4 +29,10 @@ class MathBlocksTest extends FlatSpec with Matchers {
 
     output should be ("\\begin{align*}\n\\dfrac{a+b}{c} \\\\\n\\dfrac{a}{c} + \\dfrac{b}{c}\n\\end{align*}")
   }
+
+  "equation groups with text explanation" should "produce \\text commands and align correctly" in {
+    val input = "|equation =\n  (a + b) / c = (a) / c + (b) / c # distribution (sort of)"
+    compile(parse(input)) should
+      be ("\\begin{align*}\n\\dfrac{a+b}{c} &= \\dfrac{a}{c} + \\dfrac{b}{c} && \\text{distribution (sort of)}\n\\end{align*}")
+  }
 }
