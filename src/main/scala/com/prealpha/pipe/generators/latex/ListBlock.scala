@@ -36,10 +36,13 @@ class ListBlock extends BlockGenerator {
 
     val numberType = block.argLine.trim
     val env =
-      if (numberType == "") "itemize" else "enumerate"
+      if (numberType == "" || numberType == "*")
+        "itemize"
+      else
+        "enumerate"
 
     sb.append(s"\\begin{$env}")
-    if (numberType != "")
+    if (env == "enumerate")
       sb.append(s"[$numberType]\n")
     else
       sb.append("\n")
