@@ -8,7 +8,7 @@ case class Block(instance: String, argLine: String, level: Int,
 
 class BlockBuilder(val instance: String, val argLine: String, val level: Int) {
   val lines = new java.util.ArrayList[String]
-  val lst = new util.ArrayList[BlockBuilder]()
+  var lst = new util.ArrayList[BlockBuilder]()
 
   def addLine(line: String) {
     lines.add(line)

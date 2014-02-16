@@ -1,6 +1,6 @@
 package com.prealpha.pipe
 
-import com.prealpha.pipe.pipemode.generators.latex.LatexDocument
+import com.prealpha.pipe.generators.latex.LatexDocument
 
 object EntryPoint extends App {
   var hasLines = true

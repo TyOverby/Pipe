@@ -119,4 +119,9 @@ class BlocksParserTest extends FlatSpec with Matchers {
         genPipeBlock("cmd", level = 2)
       ))))
   }
+
+  "text that is out of indentation" should "work normally" in {
+    val file = "hello\n  world"
+    val blocks = parse(file)
+  }
 }
