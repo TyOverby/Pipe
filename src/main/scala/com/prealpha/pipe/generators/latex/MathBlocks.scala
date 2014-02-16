@@ -9,7 +9,7 @@ class EquationBlock extends BlockGenerator {
     block.instance == "equation"
 
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
-    val args = block.argLine.split(" ").toList
+    val args = block.argLine.split("\\s+").toList.filter(!_.isEmpty)
     val sb = new StringBuilder
 
     val numbered = args.contains("numbered")
@@ -21,9 +21,13 @@ class EquationBlock extends BlockGenerator {
 
     sb.append("\n")
 
-    // TODO: this is some broken code. Actually handle errors please
+    // TODO this is really such a hack, it works though
+    val alignedLines =
+      for (line <- block.childLines)
+        yield (line /: args)((line, aligner) => line.replace(aligner, "&" + aligner))
+
     val compiledLines =
-      for {line <- block.childLines
+      for {line <- alignedLines
            parseResult = MathParser(line)
       } yield parseResult.get
 
