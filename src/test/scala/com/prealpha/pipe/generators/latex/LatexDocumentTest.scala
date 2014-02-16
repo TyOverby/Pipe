@@ -1,7 +1,6 @@
-package com.prealpha.pipe
+package com.prealpha.pipe.generators.latex
 
 import org.scalatest._
-import com.prealpha.pipe.generators.latex.LatexDocument
 
 class LatexDocumentTest extends FlatSpec with Matchers {
   def compile(s: String): String = {
