@@ -37,7 +37,7 @@ object BlocksParser {
         if (trimmed.length == 0) {
           // Blank line
           new BlockBuilder("_blank", "", if(last.head.level != -1) last.head.level else 0)
-        } else if (trimmed.head == '|') {
+        } else if (trimmed.head == '|' && !trimmed.tail.head.isWhitespace) {
           // Pipe decl
           new BlockBuilder(trimmed.tail.takeWhile(!_.isWhitespace),
             trimmed.dropWhile(!_.isWhitespace).trim,

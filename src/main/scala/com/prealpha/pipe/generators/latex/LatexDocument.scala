@@ -9,7 +9,8 @@ object LatexDocument {
     new ListBlock :: new SectionBlock :: new SubsectionBlock ::
       new RawTextBlock :: new BoldBlock :: new ItalicBlock ::
       new PreBlock :: new LatexBlock :: new EquationBlock ::
-      new DocumentBlock :: new MathBlock :: Nil
+      new DocumentBlock :: new MathBlock :: new TableBlock ::
+      Nil
 
   def compile(markup: String): String = {
     val parsed = InlineParser(BlocksParser.parse(markup)).get
