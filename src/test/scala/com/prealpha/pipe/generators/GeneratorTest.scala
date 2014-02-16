@@ -108,7 +108,7 @@ class GeneratorTest extends FlatSpec with Matchers {
   }
 
   "Several paraphraphs" should "be properly spaced" in {
-    val input = "this is\na paragraph\n\nthis is\nanother paragraph"
+    val input = "this is\na paragraph\nthis is\nanother paragraph"
     val parsed = parse(input)
     val output = compile(parsed)
 
