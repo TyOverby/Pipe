@@ -24,6 +24,6 @@ class LatexDocumentTest extends FlatSpec with Matchers {
         ||equation
         |  (a + b) / c = (a)/(c) + (b)/(c)
         |  x = :sin(:theta)
-      """.stripMargin))
+     |""".stripMargin))
   }
 }
