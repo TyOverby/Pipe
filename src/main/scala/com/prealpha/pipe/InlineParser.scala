@@ -34,29 +34,32 @@ object InlineParser extends RegexParsers {
 
   def content: Parser[String] = phrase(elem.+) ^^ (_.mkString)
 
-  def elem: Parser[String] = inlineElem | normalElem
+  def elem: Parser[String] = mathElem | inlineElem | normalElem
+
+  def mathElem: Parser[String] = new Parser[String] {
+    override def apply(in: Input): ParseResult[String] = ("$" ~> ((not("$") ~> ".".r).+ ^^ (_.mkString.trim)) <~ "$").apply(in) match {
+      case Error(msg, next) => Error(msg, next)
+      case Failure(msg, next) => Failure(msg, next)
+      // TODO: the type annotation is only for IntelliJ
+      case Success(result: String, next) => MathParser.apply(result) match {
+        case scala.util.Success(latex) => Success("$" + latex + "$", next)
+        case scala.util.Failure(exception) => Failure(exception.getMessage, next)
+      }
+    }
+  }
 
   def inlineElem: Parser[String] = new Parser[String] {
     override def apply(in: Input): ParseResult[String] = ("(|" ~> "[a-zA-Z0-9$]+".r).apply(in) match {
       case Error(msg, next) => Error(msg, next)
       case Failure(msg, next) => Failure(msg, next)
       case Success(result, next) => result match {
-        case "$" | "math" =>
-          (normalElem <~ "|)").apply(next) match {
-            // TODO the type annotation is only so that IntelliJ doesn't complain
-            case Success(math: String, rest) => MathParser.apply(math) match {
-              case scala.util.Success(latex) => Success("$" + latex + "$", rest)
-              case scala.util.Failure(exception) => Failure(exception.getMessage, rest)
-            }
-            case NoSuccess(_, rest) => Failure(s"illegal nested inline within $result", rest)
-          }
         case "latex" =>
-          (normalElem <~ "|)" ^^ (_.trim)).apply(next)
+          (((not("(|") ~> not("|)") ~> ".".r).+ ^^ (_.mkString)) <~ "|)" ^^ (_.trim)).apply(next)
         case _ =>
           Failure(s"unrecognized inline $result", in.drop(2))
       }
     }
   }
 
-  def normalElem: Parser[String] = (not("(|") ~> not("|)") ~> ".".r).+ ^^ (_.mkString)
+  def normalElem: Parser[String] = (not("(|") ~> not("|)") ~> not("$") ~> ".".r).+ ^^ (_.mkString)
 }

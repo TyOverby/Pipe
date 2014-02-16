@@ -37,38 +37,38 @@ class LatexDocumentTest extends FlatSpec with Matchers {
         |
         ||list 1.
         |  |item
-        |    Comparing functions (|$ f(n) |) and (|$ g(n) |):
+        |    Comparing functions $f(n)$ and $g(n)$:
         |    |list (a)
         |      |item
-        |        (|$ f(n) = 2^n, g(n) = 2^(n/2) |)
-        |        (|$ f(n) = :omega(g(n)) |):
+        |        $f(n) = 2^n, g(n) = 2^(n/2)$
+        |        $f(n) = :omega(g(n))$:
         |        |equation =
         |          !limit(n, :infty) (f(n))/(g(n)) = !limit(n, :infty) (2^n)/(2^(n/2))
         |                                          = !limit(n, :infty) 2^(n/2)
         |                                          = :infty.
         |      |item
-        |        (|$ f(n) = e^n, g(n) = n2^n |)
-        |        (|$ f(n) = :omega(g(n)) |):
+        |        $f(n) = e^n, g(n) = n2^n$
+        |        $f(n) = :omega(g(n))$:
         |        |equation =
         |          !limit(n, :infty) (f(n))/(g(n)) = !limit(n, :infty) (e^n)/(n2^n)
         |                                          = !limit(n, :infty) (1)/(n) ((e)/(2))^n
         |                                          = (1 - :ln(2)) !limit(n, :infty) ((e)/(2))^n
         |                                          = :infty.
         |      |item
-        |        (|$ f(n) = n^(!sqrt(n)), g(n) = 2^(an) |)
-        |        (|$ f(n) = o(g(n)) |): consider the following inequality:
+        |        $f(n) = n^(!sqrt(n)), g(n) = 2^(an)$
+        |        $f(n) = o(g(n))$: consider the following inequality:
         |        |equation :leq
         |          n^(!sqrt(n)) :leq 2^(an)
         |          :log(n^(!sqrt(n))) :leq :log(2^(an))
         |          !sqrt(n) :log(n) :leq a n :log(2)
         |          n^(-1/2) :log(n) :leq a :log(2)
-        |        Taking the limit of the left-hand side as (|$ n :to :infty |), we find
+        |        Taking the limit of the left-hand side as $n :to :infty$, we find
         |        |equation =
         |          !limit(n, :infty) n^(-1/2) :log(n) = !limit(n, :infty) (:log(n))/(n^(1/2))
         |                                             = !limit(n, :infty) (1/n)/((1/2)n^(-1/2))
         |                                             = !limit(n, :infty) 2n^(-1/2)
         |                                             = 0.
-        |        As (|$ n |) grows large, the left-hand side tends to zero while the right-hand side remains a positive constant. So we have shown that (|$ n^(!sqrt(n)) = O(2^(an)) |). Conversely, if the inequality were reversed it would not hold for large (|$ n |), even with the addition of a positive constant. It follows that (|$ n^(!sqrt(n)) :not= :Omega(2^(an)) |), so we must have (|$ n^(!sqrt(n)) = o(2^(an)) |).
+        |        As $n$ grows large, the left-hand side tends to zero while the right-hand side remains a positive constant. So we have shown that $n^(!sqrt(n)) = O(2^(an))$. Conversely, if the inequality were reversed it would not hold for large $n$, even with the addition of a positive constant. It follows that $n^(!sqrt(n)) :not= :Omega(2^(an))$, so we must have $n^(!sqrt(n)) = o(2^(an))$.
         |
       """.stripMargin
     )

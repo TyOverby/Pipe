@@ -11,14 +11,14 @@ class InlineParserTest extends FlatSpec with Matchers {
   }
 
   "InlineParser" should "recognize inlines in text" in {
-    InlineParser("The fraction (|$ (a+b)/c |) is somehow useful.") should
+    InlineParser("The fraction $(a+b)/c$ is somehow useful.") should
       be (Success("The fraction $\\dfrac{a+b}{c}$ is somehow useful."))
     InlineParser("Here's some arbitrary (|latex \\LaTeX{} $(ma)th$ |).") should
       be (Success("Here's some arbitrary \\LaTeX{} $(ma)th$."))
   }
 
   it should "parse inlines within arg lines" in {
-    val str = "|section Induction on (|$ n |)"
+    val str = "|section Induction on $n$"
     val block = BlocksParser.parse(str)
     compile(InlineParser(block).get) should be ("\\section*{Induction on $n$}")
   }
