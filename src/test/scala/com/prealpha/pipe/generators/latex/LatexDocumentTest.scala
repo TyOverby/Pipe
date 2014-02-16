@@ -29,7 +29,7 @@ class LatexDocumentTest extends FlatSpec with Matchers {
   }
 
   "this long document" should "compile" in {
-    println(compile(
+    compile(
       """
         ||section Meyer Kizner
         ||section CIS 121 Homework 3
@@ -68,6 +68,12 @@ class LatexDocumentTest extends FlatSpec with Matchers {
         |
         |
       """.stripMargin
-    ))
+    )
+  }
+
+
+  "Document mode" should "parse and use the settings" in {
+    val input = "|document\n  title = My Title\n  author = Ty Overby"
+    compile(input) should be ("\\documentclass[a4paper]{article}\n\\title{My Title}\n\\author{Ty Overby}\n\\begin{document}\n\\maketitle\n\\end{document}")
   }
 }

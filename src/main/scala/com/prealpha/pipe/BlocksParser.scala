@@ -20,7 +20,6 @@ object BlocksParser {
         stack.pop()
       }
 
-
       stack.peek().addChild(block)
 
       for(b <- collectionAsScalaIterable(stack)) {

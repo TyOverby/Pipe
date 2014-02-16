@@ -182,11 +182,12 @@ class GeneratorTest extends FlatSpec with Matchers {
     output should be ("\\begin{verbatim}\nhello\nworld\n    Woo\n\\end{verbatim}")
   }
 
-  "Verbatim mode " should "capture nested blocks" in {
+  "Verbatim mode" should "capture nested blocks" in {
     val input = "|raw\n |foo Bar"
     val parsed = parse(input)
     val output = compile(parsed)
 
     output should be ("\\begin{verbatim}\n|foo Bar\n\\end{verbatim}")
   }
+
 }

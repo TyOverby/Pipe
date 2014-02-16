@@ -8,7 +8,7 @@ object LatexDocument {
   def topLevel =
     new ListBlock :: new SectionBlock :: new SubsectionBlock ::
       new RawTextBlock :: new BoldBlock :: new ItalicBlock ::
-      new PreBlock :: new EquationBlock :: Nil
+      new PreBlock :: new EquationBlock :: new DocumentBlock :: Nil
 
   def compile(markup: String): String = {
     val parsed = InlineParser(BlocksParser.parse(markup)).get
@@ -17,6 +17,7 @@ object LatexDocument {
 
     val importsSb = new StringBuilder
     val configSb = new StringBuilder
+    val insideBodySb = new StringBuilder
 
     val rb = new RootBlock
     val (output, result) = rb.produce(parsed)(CompileContext(topLevel))
@@ -27,9 +28,20 @@ object LatexDocument {
         .append("}\n")
     }
 
+    for (s <- result.settings) {
+      configSb.append(s)
+      .append("\n")
+    }
+
+    for (s <- result.insideDoc) {
+      insideBodySb.append(s)
+    }
+
     totalSb.append("\\documentclass[a4paper]{article}\n")
     totalSb.append(importsSb)
+    totalSb.append(configSb)
     totalSb.append("\\begin{document}\n")
+    totalSb.append(insideBodySb)
     totalSb.append(output)
     totalSb.append("\n\\end{document}")
 
