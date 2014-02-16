@@ -2,6 +2,7 @@ package com.prealpha.pipe.generators.latex
 
 import com.prealpha.pipe.BlocksParser
 import com.prealpha.pipe.generators.CompileContext
+import scala.io.Source
 
 object LatexDocument {
   def topLevel =
@@ -33,5 +34,11 @@ object LatexDocument {
     totalSb.append("\n\\end{document}")
 
     totalSb.toString()
+  }
+
+  def main(args: Array[String]): Unit = {
+    val markup = Source.fromInputStream(System.in).getLines().mkString("\n")
+    val latex = compile(markup)
+    System.out.println(latex)
   }
 }
