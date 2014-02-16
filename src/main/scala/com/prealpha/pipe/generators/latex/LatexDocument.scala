@@ -1,16 +1,17 @@
-package com.prealpha.pipe.pipemode.generators.latex
+package com.prealpha.pipe.generators.latex
 
-import com.prealpha.pipe.pipemode.{CompileContext, BlocksParser}
+import com.prealpha.pipe.{InlineParser, BlocksParser}
+import com.prealpha.pipe.generators.CompileContext
+import scala.io.Source
 
 object LatexDocument {
-
   def topLevel =
-    new ListBlock :: new SectionBlock :: new RawTextBlock ::
-      new BoldBlock :: new ItalicBlock :: new PreBlock ::
-      new EquationBlock :: Nil
+    new ListBlock :: new SectionBlock :: new SubsectionBlock ::
+      new RawTextBlock :: new BoldBlock :: new ItalicBlock ::
+      new PreBlock :: new EquationBlock :: Nil
 
   def compile(markup: String): String = {
-    val parsed = BlocksParser.parse(markup)
+    val parsed = InlineParser(BlocksParser.parse(markup)).get
 
     val totalSb = new StringBuilder
 
@@ -26,7 +27,6 @@ object LatexDocument {
         .append("}\n")
     }
 
-
     totalSb.append("\\documentclass[a4paper]{article}\n")
     totalSb.append(importsSb)
     totalSb.append("\\begin{document}\n")
@@ -34,5 +34,11 @@ object LatexDocument {
     totalSb.append("\n\\end{document}")
 
     totalSb.toString()
+  }
+
+  def main(args: Array[String]): Unit = {
+    val markup = Source.fromInputStream(System.in).getLines().mkString("\n")
+    val latex = compile(markup)
+    System.out.println(latex)
   }
 }

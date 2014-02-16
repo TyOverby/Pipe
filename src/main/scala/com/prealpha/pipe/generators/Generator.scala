@@ -1,10 +1,16 @@
-package com.prealpha.pipe.pipemode
+package com.prealpha.pipe.generators
+
+import com.prealpha.pipe.Block
 
 case class CompileContext(generators: List[BlockGenerator],
                           settings: Map[Class[_],Map[String, String]] = Map())
 
 
-case class ResultContext(imports: Set[String])
+case class ResultContext(imports: Set[String]) {
+  def ++ (other: ResultContext): ResultContext = {
+    ResultContext(this.imports ++ other.imports)
+  }
+}
 
 object EmptyResultContext extends ResultContext(Set())
 
@@ -19,7 +25,7 @@ trait BlockGenerator {
     }
 
     if (matching.size > 1) {
-      System.err.println(s"Multiple block Generators (${matching.toString()}) match ${block.toString()}. " +
+      System.err.println(s"Multiple block Generators (${matching.toString()}) match ${block.toString}. " +
       s"Going with ${matching.head.toString}")
     }
 

@@ -1,6 +1,7 @@
-package com.prealpha.pipe.pipemode.generators.latex
+package com.prealpha.pipe.generators.latex
 
-import com.prealpha.pipe.pipemode.{ResultContext, CompileContext, Block, BlockGenerator}
+import com.prealpha.pipe.Block
+import com.prealpha.pipe.generators._
 
 abstract class FontBlock extends BlockGenerator {
 

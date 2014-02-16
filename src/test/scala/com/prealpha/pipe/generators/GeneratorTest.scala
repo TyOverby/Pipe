@@ -1,8 +1,8 @@
-package com.prealpha.pipe
+package com.prealpha.pipe.generators
 
 import org.scalatest._
-import com.prealpha.pipe.pipemode.{Block, BlocksParser}
-import com.prealpha.pipe.pipemode.generators.latex.RootBlock
+import com.prealpha.pipe.generators.latex.RootBlock
+import com.prealpha.pipe.{BlocksParser, Block}
 
 class GeneratorTest extends FlatSpec with Matchers {
   def compile(b: Block): String = {
@@ -35,11 +35,11 @@ class GeneratorTest extends FlatSpec with Matchers {
   }
 
   "A list with arguments" should "produce a different looking result" in {
-    val input = "|list numeric\n |item Foo"
+    val input = "|list 1.\n |item Foo"
     val parsed = parse(input)
     val output = compile(parsed)
 
-    output should be("\\begin{enumerate}\n\\item Foo\n\\end{enumerate}")
+    output should be("\\begin{enumerate}[1.]\n\\item Foo\n\\end{enumerate}")
   }
 
   "A list item without a parent list" should "not compile" in {
@@ -108,7 +108,7 @@ class GeneratorTest extends FlatSpec with Matchers {
   }
 
   "Several paraphraphs" should "be properly spaced" in {
-    val input = "this is\na paragraph\n\nthis is\nanother paragraph"
+    val input = "this is\na paragraph\nthis is\nanother paragraph"
     val parsed = parse(input)
     val output = compile(parsed)
 

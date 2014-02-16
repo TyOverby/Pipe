@@ -1,26 +1,38 @@
 package com.prealpha.pipe
 
 import scala.util.parsing.combinator.RegexParsers
+import scala.util.Try
 
 /*
  * The precedence of the various expression types is kind of unclear from the code.
  * basicExpr has the highest precedence, followed by binaryExpr and then expr.
  */
 object MathParser extends RegexParsers {
-  def apply(input: String): Option[String] = parse(math, input) match {
-    case Success(result, next) => Some(result)
-    case _ => None
+  def apply(input: String): Try[String] = {
+    if (input.trim == "")
+      scala.util.Success(input)
+    else
+      parse(math, input) match {
+        case Success(result, next) => scala.util.Success(result)
+        case NoSuccess(msg, next) => scala.util.Failure(new ParseException(msg, input, next))
+      }
   }
 
   override def skipWhitespace = false
 
-  def math: Parser[String] = phrase(spacedExpr.+) ^^ {
-    case list => ("" /: list)(_ + _)
-  }
+  def math: Parser[String] = phrase(spacedExpr.+) ^^ (_.mkString(" "))
 
-  def expr: Parser[String] = text | symbol | macro_ | binaryExpr
+  def normalCharNoPunct: Parser[String] = "[^\\s/():!^_,;]".r
 
-  def binaryExpr: Parser[String] = horizontalDivide | verticalDivide | superscript | subscript | basicExpr
+  def normalChar: Parser[String] = normalCharNoPunct | "," | ";"
+
+  def exprNoPunct: Parser[String] = text | symbol | macro_ | binaryExprNoPunct
+
+  def expr: Parser[String] = exprNoPunct | binaryExpr
+
+  def binaryExprNoPunct: Parser[String] = horizontalDivide | verticalDivide | superscript | subscript | basicExprNoPunct
+
+  def binaryExpr: Parser[String] = binaryExprNoPunct | basicExpr
 
   def slash: Parser[String] = whiteSpace.? ~> "/" <~ whiteSpace.?
 
@@ -52,35 +64,37 @@ object MathParser extends RegexParsers {
       case leftExpr ~ uscore ~ rightExpr => s"$leftExpr$uscore{$rightExpr}"
     }
 
-  def basicExpr: Parser[String] = (parenExpr ^^ { "(" + _ + ")" }) | normalExpr
+  def basicExprNoPunct: Parser[String] = (parenExpr ^^ { "\\left(" + _ + "\\right)" }) | normalExprNoPunct
 
-  def parenExpr: Parser[String] = "(" ~> spacedExpr.+ <~ ")" ^^ {
-    case list => ("" /: list)(_ + _)
-  }
+  def basicExpr: Parser[String] = basicExprNoPunct | normalExpr
 
-  def normalExpr: Parser[String] = "[^\\s/():!,;^_]+".r
+  def parenExpr: Parser[String] = "(" ~> spacedExpr.+ <~ ")" ^^ (_.mkString)
+
+  def normalExprNoPunct: Parser[String] = normalCharNoPunct.+ ^^ (_.mkString)
+
+  def normalExpr: Parser[String] = normalChar.+ ^^ (_.mkString)
+
+  def spacedExprNoPunct: Parser[String] = whiteSpace.? ~> exprNoPunct <~ whiteSpace.?
 
   def spacedExpr: Parser[String] = whiteSpace.? ~> expr <~ whiteSpace.?
 
-  def exprList: Parser[List[String]] = spacedExpr ~ ("," ~> spacedExpr).* ^^ {
+  def exprList: Parser[List[String]] = spacedExprNoPunct ~ ("," ~> spacedExprNoPunct).* ^^ {
     case head ~ tail => head :: tail
   }
 
-  def twoExprList: Parser[String ~ String] = (spacedExpr <~ ",") ~ spacedExpr
+  def twoExprList: Parser[String ~ String] = (spacedExprNoPunct <~ ",") ~ spacedExprNoPunct
 
   // TODO figure out how the hell quotation marks inside text will work
   def text: Parser[String] = "\"" ~> """[^"\n\r]*""".r <~ "\"" ^^ {
     case str => s"\\text{$str}"
   }
 
-  def symbol: Parser[String] = ":" ~> (not(whiteSpace) ~> ".".r).* ^^ {
-    case chars => "\\" + ("" /: chars)(_ + _)
-  }
+  def symbol: Parser[String] = ":" ~> normalChar.+ ^^ ("\\" + _.mkString)
 
   def macro_ : Parser[String] = new Parser[String] {
-    override def apply(in: Input): ParseResult[String] = ("!" ~> "[a-zA-Z0-9]+".r <~ "(").apply(in) match {
-      case Failure(msg, next) => Failure(msg, next)
+    override def apply(in: Input): ParseResult[String] = ("!" ~> (normalChar.+ ^^ (_.mkString)) <~ "(").apply(in) match {
       case Error(msg, next) => Error(msg, next)
+      case Failure(msg, next) => Failure(msg, next)
       case Success(result, next) =>
         val parser = result match {
           case "sum" =>
@@ -107,20 +121,17 @@ object MathParser extends RegexParsers {
             (whiteSpace.? ~> exprList <~ whiteSpace.?) ~ (";" ~> whiteSpace.? ~> exprList <~ whiteSpace.?).* ^^ {
               case first ~ rest =>
                 val list = first :: rest
-                val flatRows = list.map {
-                  case Nil => ""
-                  case head :: tail => head + ("" /: tail)(_ + " & " + _)
-                }
-                val rowsStr = ("" /: flatRows)(_ + _ + " \\\\ ")
+                val flatRows = list.map("  " + _.mkString(" & "))
+                val rowsStr = flatRows.mkString(" \\\\\n")
                 val colCount = list.map(_.length).max
                 val colStr = "c" * colCount
-                s"\\left( \\begin{array}{$colStr} $rowsStr \\end{array} \\right)"
+                s"\\left( \\begin{array}{$colStr}\n$rowsStr\n\\end{array} \\right)"
             }
           case "cases" =>
             (whiteSpace.? ~> twoExprList <~ whiteSpace.?) ~ ("," ~> whiteSpace.? ~> twoExprList <~ whiteSpace.?).* ^^ {
               case head ~ tail =>
                 val list = head :: tail
-                val casesLines = ("" /: list)(_ + _ + "\\\\")
+                val casesLines = list.mkString("\\\\")
                 "\\left{" + casesLines
             }
           case _ => null

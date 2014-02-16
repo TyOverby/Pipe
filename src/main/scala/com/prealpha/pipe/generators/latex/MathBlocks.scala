@@ -1,10 +1,8 @@
-package com.prealpha.pipe.pipemode.generators.latex
+package com.prealpha.pipe.generators.latex
 
-import com.prealpha.pipe.pipemode._
-import com.prealpha.pipe.pipemode.Block
-import com.prealpha.pipe.pipemode.CompileContext
-import com.prealpha.pipe.pipemode.ResultContext
+import com.prealpha.pipe.Block
 import com.prealpha.pipe.MathParser
+import com.prealpha.pipe.generators._
 
 class EquationBlock extends BlockGenerator {
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean =
@@ -26,8 +24,8 @@ class EquationBlock extends BlockGenerator {
     // TODO: this is some broken code. Actually handle errors please
     val compiledLines =
       for {line <- block.childLines
-           compiled <- MathParser.apply(line)
-      } yield compiled
+           parseResult = MathParser(line)
+      } yield parseResult.get
 
     sb.append(compiledLines.mkString(" \\\\\n"))
 

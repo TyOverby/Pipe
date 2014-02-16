@@ -1,4 +1,4 @@
-package com.prealpha.pipe.pipemode
+package com.prealpha.pipe
 
 import java.util
 import scala.util.control.Breaks._

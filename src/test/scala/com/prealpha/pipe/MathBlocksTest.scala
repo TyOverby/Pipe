@@ -2,10 +2,9 @@
 package com.prealpha.pipe
 
 import org.scalatest._
-import com.prealpha.pipe.pipemode.{Block, BlocksParser}
-import com.prealpha.pipe.pipemode.generators.latex.RootBlock
+import com.prealpha.pipe.generators.latex.RootBlock
 
-class MathModeTest extends FlatSpec with Matchers {
+class MathBlocksTest extends FlatSpec with Matchers {
   def compile(b: Block): String = {
     val rb = new RootBlock
     rb.force(b)
@@ -28,6 +27,6 @@ class MathModeTest extends FlatSpec with Matchers {
     val parsed = parse(input)
     val output = compile(parsed)
 
-    output should be ("\\begin{align*}\n\\dfrac{a+b}{c} \\\\\n\\dfrac{a}{c}+\\dfrac{b}{c}\n\\end{align*}")
+    output should be ("\\begin{align*}\n\\dfrac{a+b}{c} \\\\\n\\dfrac{a}{c} + \\dfrac{b}{c}\n\\end{align*}")
   }
 }

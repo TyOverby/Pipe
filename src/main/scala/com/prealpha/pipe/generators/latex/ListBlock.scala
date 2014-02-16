@@ -1,25 +1,27 @@
-package com.prealpha.pipe.pipemode.generators.latex
+package com.prealpha.pipe.generators.latex
 
-import com.prealpha.pipe.pipemode._
+import com.prealpha.pipe.Block
+import com.prealpha.pipe.generators._
 
 class ListItemBlock(oldContext: CompileContext) extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
-    val strRet = if (block.instance == "item" || block.instance == "*") {
+    val (strRet, rctx) = if (block.instance == "item" || block.instance == "*") {
       val header = block.argLine match {
-        case "" => "\\item"
+        case "" => "\\item\n"
         case x => "\\item " + x
       }
-      val body = block.childBlocks match {
-        case Nil => ""
-        case xs => "\n" + merge(xs.map(b => this.compile(b)(oldContext)))._1
+      val (body, rctx2) = block.childBlocks match {
+        case Nil => ("", EmptyResultContext)
+        case xs => merge(xs.map(b => this.compile(b)(oldContext)))
       }
-      header + body
+      (header + body, rctx2)
     } else {
       val wouldHave = block.copy(instance = block.instance.substring(1))
-      "\\item\n" + compile(wouldHave)(oldContext)._1
+      val compiled = compile(wouldHave)(oldContext)
+      ("\\item\n" + compiled._1, compiled._2)
     }
 
-    (strRet, EmptyResultContext)
+    (strRet, rctx)
   }
 
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean = {
@@ -32,26 +34,26 @@ class ListBlock extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     val sb = new StringBuilder
 
-    // TODO: Go back and add more to this
-    val value = block.argLine.trim match {
-      case "" => "itemize"
-      case "bullet" => "itemize"
-      case "numerical" => "enumerate"
-      case "numeric" => "enumerate"
-      case _ => throw new Exception("Bad argument for list display type.  Correct options are [bullet, numerical]")
-    }
+    val numberType = block.argLine.trim
+    val env =
+      if (numberType == "") "itemize" else "enumerate"
 
-    sb.append(s"\\begin{$value}\n")
+    sb.append(s"\\begin{$env}")
+    if (numberType != "")
+      sb.append(s"[$numberType]\n")
+    else
+      sb.append("\n")
 
     val lib = new ListItemBlock(ctx)
 
     val results = block.childBlocks.map(b=>lib.compile(b)(ctx.copy(generators = lib :: Nil)))
-    sb.append(merge(results)._1)
+    val merged = merge(results)
+    sb.append(merged._1)
     sb.append("\n")
 
-    sb.append(s"\\end{$value}")
+    sb.append(s"\\end{$env}")
 
-    (sb.toString(), EmptyResultContext)
+    (sb.toString(), merged._2 ++ ResultContext(Set("enumerate")))
   }
 
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean = {
