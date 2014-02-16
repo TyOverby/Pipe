@@ -27,6 +27,6 @@ class MathBlocksTest extends FlatSpec with Matchers {
     val parsed = parse(input)
     val output = compile(parsed)
 
-    output should be ("\\begin{align*}\n\\dfrac{a+b}{c} \\\\\n\\dfrac{a}{c}+\\dfrac{b}{c}\n\\end{align*}")
+    output should be ("\\begin{align*}\n\\dfrac{a+b}{c} \\\\\n\\dfrac{a}{c} + \\dfrac{b}{c}\n\\end{align*}")
   }
 }

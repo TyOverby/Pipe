@@ -22,13 +22,13 @@ class MathParserTest extends FlatSpec with Matchers {
   }
 
   it should "handle vertical division" in {
-    MathParser("a + b / c") should be (Success("a+b/c"))
+    MathParser("a + b / c") should be (Success("a + b/c"))
   }
 
   it should "handle horizontal division" in {
     MathParser("(a + b) / c") should be (Success("\\dfrac{a+b}{c}"))
-    MathParser("a + b / (c)") should be (Success("a+\\dfrac{b}{c}"))
-    MathParser("a + b / ((c))") should be (Success("a+\\dfrac{b}{\\left(c\\right)}"))
+    MathParser("a + b / (c)") should be (Success("a + \\dfrac{b}{c}"))
+    MathParser("a + b / ((c))") should be (Success("a + \\dfrac{b}{\\left(c\\right)}"))
   }
 
   it should "handle superscripts" in {

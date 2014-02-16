@@ -20,7 +20,7 @@ object MathParser extends RegexParsers {
 
   override def skipWhitespace = false
 
-  def math: Parser[String] = phrase(spacedExpr.+) ^^ (_.mkString)
+  def math: Parser[String] = phrase(spacedExpr.+) ^^ (_.mkString(" "))
 
   def normalCharNoPunct: Parser[String] = "[^\\s/():!^_,;]".r
 
