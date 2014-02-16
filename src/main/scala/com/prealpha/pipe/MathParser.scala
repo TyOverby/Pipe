@@ -22,11 +22,11 @@ object MathParser extends RegexParsers {
 
   def math: Parser[String] = phrase(spacedExpr.+) ^^ (_.mkString(" "))
 
-  def normalCharNoPunct: Parser[String] = "[^\\s/():!^_,;]".r
+  def normalCharNoPunct: Parser[String] = "[^\\s/():!^_,;]".r | symbol
 
   def normalChar: Parser[String] = normalCharNoPunct | "," | ";"
 
-  def exprNoPunct: Parser[String] = symbol | macro_ | binaryExprNoPunct
+  def exprNoPunct: Parser[String] = macro_ | binaryExprNoPunct
 
   def expr: Parser[String] = exprNoPunct | binaryExpr
 
