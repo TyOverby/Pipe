@@ -6,7 +6,7 @@ import scala.util.Try
 object InlineParser extends RegexParsers {
   def apply(input: String): Try[String] = parse(content, input) match {
     case Success(result, next) => scala.util.Success(result)
-    case NoSuccess(msg, next) => scala.util.Failure(new Exception(msg))
+    case NoSuccess(msg, next) => scala.util.Failure(new ParseException(msg, input, next))
   }
 
   def apply(block: Block): Try[Block] = {
@@ -21,7 +21,7 @@ object InlineParser extends RegexParsers {
       val parsedBlock = Block(block.instance, parsedArgLine, block.level, parsedChildLines, parsedChildBlocks)
       scala.util.Success(parsedBlock)
     } catch {
-      case x: Exception => scala.util.Failure(x)
+      case px: ParseException[String] => scala.util.Failure(px)
     }
   }
 

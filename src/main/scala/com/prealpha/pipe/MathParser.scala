@@ -8,10 +8,9 @@ import scala.util.Try
  * basicExpr has the highest precedence, followed by binaryExpr and then expr.
  */
 object MathParser extends RegexParsers {
-  // TODO: use a custom exception type?
   def apply(input: String): Try[String] = parse(math, input) match {
     case Success(result, next) => scala.util.Success(result)
-    case NoSuccess(msg, next) => scala.util.Failure(new Exception(msg))
+    case NoSuccess(msg, next) => scala.util.Failure(new ParseException(msg, input, next))
   }
 
   override def skipWhitespace = false
