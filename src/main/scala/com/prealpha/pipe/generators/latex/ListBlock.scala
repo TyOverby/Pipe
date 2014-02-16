@@ -53,7 +53,7 @@ class ListBlock extends BlockGenerator {
 
     sb.append(s"\\end{$env}")
 
-    (sb.toString(), merged._2)
+    (sb.toString(), merged._2 ++ ResultContext(Set("enumerate")))
   }
 
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean = {

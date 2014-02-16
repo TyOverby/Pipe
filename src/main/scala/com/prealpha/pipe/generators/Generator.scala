@@ -6,7 +6,11 @@ case class CompileContext(generators: List[BlockGenerator],
                           settings: Map[Class[_],Map[String, String]] = Map())
 
 
-case class ResultContext(imports: Set[String])
+case class ResultContext(imports: Set[String]) {
+  def ++ (other: ResultContext): ResultContext = {
+    ResultContext(this.imports ++ other.imports)
+  }
+}
 
 object EmptyResultContext extends ResultContext(Set())
 

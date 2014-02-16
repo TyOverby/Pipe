@@ -38,21 +38,21 @@ class LatexDocumentTest extends FlatSpec with Matchers {
         ||list 1.
         |  |item Comparing functions (|$ f(n) |) and (|$ g(n) |):
         |    |list (a)
-        |      |item (|$ f(n) = 2^n, g(n) = 2^(n/2)
-        |             f(n) = :omega(g(n)) |):
+        |      |item (|$ f(n) = 2^n, g(n) = 2^(n/2) |)
+        |            (|$ f(n) = :omega(g(n)) |):
         |        |equation =
         |          !limit(n, :infty) (f(n))/(g(n)) = !limit(n, :infty) (2^n)/(2^(n/2))
         |                                          = !limit(n, :infty) 2^(n/2)
         |                                          = :infty.
-        |      |item (|$ f(n) = e^n, g(n) = n2^n
-        |             f(n) = :omega(g(n)) |):
+        |      |item (|$ f(n) = e^n, g(n) = n2^n |)
+        |            (|$ f(n) = :omega(g(n)) |):
         |        |equation =
         |          !limit(n, :infty) (f(n))/(g(n)) = !limit(n, :infty) (e^n)/(n2^n)
         |                                          = !limit(n, :infty) (1)/(n) ((e)/(2))^n
         |                                          = (1 - :ln(2)) !limit(n, :infty) ((e)/(2))^n
         |                                          = :infty.
-        |      |item (|$ f(n) = n^(!sqrt(n)), g(n) = 2^(an)
-        |             f(n) = o(g(n)) |): consider the following inequality:
+        |      |item (|$ f(n) = n^(!sqrt(n)), g(n) = 2^(an) |)
+        |            (|$ f(n) = o(g(n)) |): consider the following inequality:
         |        |equation :leq
         |          n^(!sqrt(n)) :leq 2^(an)
         |          :log(n^(!sqrt(n))) :leq :log(2^(an))
