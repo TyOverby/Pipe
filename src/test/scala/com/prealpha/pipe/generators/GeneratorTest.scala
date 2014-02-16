@@ -35,11 +35,11 @@ class GeneratorTest extends FlatSpec with Matchers {
   }
 
   "A list with arguments" should "produce a different looking result" in {
-    val input = "|list numeric\n |item Foo"
+    val input = "|list 1.\n |item Foo"
     val parsed = parse(input)
     val output = compile(parsed)
 
-    output should be("\\begin{enumerate}\n\\item Foo\n\\end{enumerate}")
+    output should be("\\begin{enumerate}[1.]\n\\item Foo\n\\end{enumerate}")
   }
 
   "A list item without a parent list" should "not compile" in {

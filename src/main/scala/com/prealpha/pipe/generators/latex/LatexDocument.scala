@@ -6,9 +6,9 @@ import scala.io.Source
 
 object LatexDocument {
   def topLevel =
-    new ListBlock :: new SectionBlock :: new RawTextBlock ::
-      new BoldBlock :: new ItalicBlock :: new PreBlock ::
-      new EquationBlock :: Nil
+    new ListBlock :: new SectionBlock :: new SubsectionBlock ::
+      new RawTextBlock :: new BoldBlock :: new ItalicBlock ::
+      new PreBlock :: new EquationBlock :: Nil
 
   def compile(markup: String): String = {
     val parsed = BlocksParser.parse(markup)

@@ -33,16 +33,15 @@ class ListBlock extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     val sb = new StringBuilder
 
-    // TODO: Go back and add more to this
-    val value = block.argLine.trim match {
-      case "" => "itemize"
-      case "bullet" => "itemize"
-      case "numerical" => "enumerate"
-      case "numeric" => "enumerate"
-      case _ => throw new Exception("Bad argument for list display type.  Correct options are [bullet, numerical]")
-    }
+    val numberType = block.argLine.trim
+    val env =
+      if (numberType == "") "itemize" else "enumerate"
 
-    sb.append(s"\\begin{$value}\n")
+    sb.append(s"\\begin{$env}")
+    if (numberType != "")
+      sb.append(s"[$numberType]\n")
+    else
+      sb.append("\n")
 
     val lib = new ListItemBlock(ctx)
 
@@ -50,7 +49,7 @@ class ListBlock extends BlockGenerator {
     sb.append(merge(results)._1)
     sb.append("\n")
 
-    sb.append(s"\\end{$value}")
+    sb.append(s"\\end{$env}")
 
     (sb.toString(), EmptyResultContext)
   }
