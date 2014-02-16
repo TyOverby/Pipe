@@ -22,11 +22,17 @@ object MathParser extends RegexParsers {
 
   def math: Parser[String] = phrase(spacedExpr.+) ^^ (_.mkString)
 
-  def normalChar: Parser[String] = "[^\\s/():!,;^_]".r
+  def normalCharNoPunct: Parser[String] = "[^\\s/():!^_,;]".r
 
-  def expr: Parser[String] = text | symbol | macro_ | binaryExpr
+  def normalChar: Parser[String] = normalCharNoPunct | "," | ";"
 
-  def binaryExpr: Parser[String] = horizontalDivide | verticalDivide | superscript | subscript | basicExpr
+  def exprNoPunct: Parser[String] = text | symbol | macro_ | binaryExprNoPunct
+
+  def expr: Parser[String] = exprNoPunct | binaryExpr
+
+  def binaryExprNoPunct: Parser[String] = horizontalDivide | verticalDivide | superscript | subscript | basicExprNoPunct
+
+  def binaryExpr: Parser[String] = binaryExprNoPunct | basicExpr
 
   def slash: Parser[String] = whiteSpace.? ~> "/" <~ whiteSpace.?
 
@@ -58,19 +64,25 @@ object MathParser extends RegexParsers {
       case leftExpr ~ uscore ~ rightExpr => s"$leftExpr$uscore{$rightExpr}"
     }
 
-  def basicExpr: Parser[String] = (parenExpr ^^ { "\\left(" + _ + "\\right)" }) | normalExpr
+  def basicExprNoPunct: Parser[String] = (parenExpr ^^ { "\\left(" + _ + "\\right)" }) | normalExprNoPunct
+
+  def basicExpr: Parser[String] = basicExprNoPunct | normalExpr
 
   def parenExpr: Parser[String] = "(" ~> spacedExpr.+ <~ ")" ^^ (_.mkString)
 
+  def normalExprNoPunct: Parser[String] = normalCharNoPunct.+ ^^ (_.mkString)
+
   def normalExpr: Parser[String] = normalChar.+ ^^ (_.mkString)
+
+  def spacedExprNoPunct: Parser[String] = whiteSpace.? ~> exprNoPunct <~ whiteSpace.?
 
   def spacedExpr: Parser[String] = whiteSpace.? ~> expr <~ whiteSpace.?
 
-  def exprList: Parser[List[String]] = spacedExpr ~ ("," ~> spacedExpr).* ^^ {
+  def exprList: Parser[List[String]] = spacedExprNoPunct ~ ("," ~> spacedExprNoPunct).* ^^ {
     case head ~ tail => head :: tail
   }
 
-  def twoExprList: Parser[String ~ String] = (spacedExpr <~ ",") ~ spacedExpr
+  def twoExprList: Parser[String ~ String] = (spacedExprNoPunct <~ ",") ~ spacedExprNoPunct
 
   // TODO figure out how the hell quotation marks inside text will work
   def text: Parser[String] = "\"" ~> """[^"\n\r]*""".r <~ "\"" ^^ {
