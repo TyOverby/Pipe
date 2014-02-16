@@ -40,8 +40,8 @@ object InlineParser extends RegexParsers {
     override def apply(in: Input): ParseResult[String] = ("(|" ~> "[a-zA-Z0-9$]+".r).apply(in) match {
       case Error(msg, next) => Error(msg, next)
       case Failure(msg, next) => Failure(msg, next)
-      case Success(result, next) =>
-        if (result == "$" || result == "math")
+      case Success(result, next) => result match {
+        case "$" | "math" =>
           (normalElem <~ "|)").apply(next) match {
             // TODO the type annotation is only so that IntelliJ doesn't complain
             case Success(math: String, rest) => MathParser.apply(math) match {
@@ -50,8 +50,11 @@ object InlineParser extends RegexParsers {
             }
             case NoSuccess(_, rest) => Failure(s"illegal nested inline within $result", rest)
           }
-        else
+        case "latex" =>
+          (normalElem <~ "|)" ^^ (_.trim)).apply(next)
+        case _ =>
           Failure(s"unrecognized inline $result", in.drop(2))
+      }
     }
   }
 
