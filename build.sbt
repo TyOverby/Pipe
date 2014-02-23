@@ -1,10 +1,11 @@
+organization := Common.organization
+
 name := "Pipe"
 
-version := "0.0.1"
+version := Common.version
 
-scalaVersion := "2.10.3"
+scalaVersion := Common.scalaVersion
 
-scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
+lazy val math = project in file("math")
 
-libraryDependencies += "org.scalatest" % "scalatest_2.10" % "latest.integration" % "test"
-
+lazy val blocks = project in file("blocks") dependsOn(math)
