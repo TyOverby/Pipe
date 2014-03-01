@@ -4,7 +4,7 @@ import com.prealpha.pipe.blocks.Block
 import com.prealpha.pipe.blocks.generators._
 import com.prealpha.pipe.math.MathParser
 
-class EquationBlock extends BlockGenerator {
+object EquationBlock extends BlockGenerator {
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean =
     block.instance == "equation"
 
@@ -41,7 +41,7 @@ class EquationBlock extends BlockGenerator {
   }
 }
 
-class MathBlock extends BlockGenerator {
+object MathBlock extends BlockGenerator {
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean =
     block.instance == "math"
 

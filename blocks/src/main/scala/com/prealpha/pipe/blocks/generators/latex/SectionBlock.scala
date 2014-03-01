@@ -3,7 +3,7 @@ package com.prealpha.pipe.blocks.generators.latex
 import com.prealpha.pipe.blocks.Block
 import com.prealpha.pipe.blocks.generators._
 
-class SectionBlock extends BlockGenerator {
+object SectionBlock extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     val sb = new StringBuilder
     sb.append(s"\\section*{${block.argLine}}")

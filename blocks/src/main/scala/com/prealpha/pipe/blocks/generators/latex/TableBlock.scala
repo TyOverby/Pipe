@@ -4,7 +4,7 @@ import com.prealpha.pipe.blocks.Block
 import com.prealpha.pipe.blocks.InlineParser
 import com.prealpha.pipe.blocks.generators._
 
-class TableBlock extends BlockGenerator {
+object TableBlock extends BlockGenerator {
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean = {
     block.instance == "table"
   }

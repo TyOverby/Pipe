@@ -6,7 +6,7 @@ import com.prealpha.pipe.blocks.generators.latex.RootBlock
 
 class GeneratorTest extends FlatSpec with Matchers {
   def compile(b: Block): String = {
-    val rb = new RootBlock
+    val rb = RootBlock
     rb.force(b)
   }
 

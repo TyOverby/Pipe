@@ -6,10 +6,10 @@ import scala.io.Source
 
 object LatexDocument {
   def topLevel =
-    new ListBlock :: new SectionBlock :: new SubsectionBlock ::
-      new RawTextBlock :: new BoldBlock :: new ItalicBlock ::
-      new PreBlock :: new LatexBlock :: new EquationBlock ::
-      new DocumentBlock :: new MathBlock :: new TableBlock ::
+    ListBlock :: SectionBlock :: SubsectionBlock ::
+      RawTextBlock :: new BoldBlock :: new ItalicBlock ::
+      PreBlock :: LatexBlock :: EquationBlock ::
+      DocumentBlock :: MathBlock :: TableBlock ::
       Nil
 
   def compile(markup: String): String = {
@@ -21,7 +21,7 @@ object LatexDocument {
     val configSb = new StringBuilder
     val insideBodySb = new StringBuilder
 
-    val rb = new RootBlock
+    val rb = RootBlock
     val (output, result) = rb.produce(parsed)(CompileContext(topLevel))
 
     for (s <- result.imports) {

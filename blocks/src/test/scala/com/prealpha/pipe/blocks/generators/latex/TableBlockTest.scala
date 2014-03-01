@@ -5,7 +5,7 @@ import org.scalatest._
 
 class TableBlockTest extends FlatSpec with Matchers {
   def compile(b: Block): String = {
-    val rb = new RootBlock
+    val rb = RootBlock
     rb.force(b)
   }
 

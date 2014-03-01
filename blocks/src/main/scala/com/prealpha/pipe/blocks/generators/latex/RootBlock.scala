@@ -3,7 +3,7 @@ package com.prealpha.pipe.blocks.generators.latex
 import com.prealpha.pipe.blocks.Block
 import com.prealpha.pipe.blocks.generators._
 
-class RootBlock extends BlockGenerator {
+object RootBlock extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     merge(block.childBlocks.map(compile))
   }

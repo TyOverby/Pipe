@@ -22,7 +22,7 @@ class ListItemBlock(oldContext: CompileContext) extends BlockGenerator {
   }
 }
 
-class ListBlock extends BlockGenerator {
+object ListBlock extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     val sb = new StringBuilder
 
