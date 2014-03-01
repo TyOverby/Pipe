@@ -23,7 +23,7 @@ class EquationBlock extends BlockGenerator {
 
     // TODO this is really such a hack, it works though
     val alignedLines =
-      for (line <- block.childLines if line.trim.length > 0)
+      for (line <- block.childLines if line.exists(!_.isWhitespace))
       yield (line /: args)((line, aligner) => line.replace(aligner, "&" + aligner))
     val compiledLines =
       for (line <- alignedLines)
