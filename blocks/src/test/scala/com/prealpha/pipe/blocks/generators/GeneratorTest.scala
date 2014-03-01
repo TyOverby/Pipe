@@ -64,31 +64,9 @@ class GeneratorTest extends FlatSpec with Matchers {
       """.trim())
   }
 
-  "The * shortcut for list items" should "work" in {
-    val input = "|list\n  |*list\n    |item Foo"
-    val parsed = parse(input)
-    val output = compile(parsed)
-
-    output should be(
-      """
-\begin{itemize}
-\item
-\begin{itemize}
-\item Foo
-\end{itemize}
-\end{itemize}
-      """.trim())
-
-  }
 
   "Nesting a list item under a list item" should "be impossible" in {
     val input = "|list\n  |item\n    |item Foo"
-    val parsed = parse(input)
-    intercept[Exception](compile(parsed))
-  }
-
-  "Nesting a list item under a list item via the shortcut" should "be impossible" in {
-    val input = "|list\n  |*item"
     val parsed = parse(input)
     intercept[Exception](compile(parsed))
   }
@@ -159,11 +137,19 @@ class GeneratorTest extends FlatSpec with Matchers {
   }
 
   "A list with some text and a list as it's children" should "be fine" in {
-    val input = "|section Foo\n  Paragraph\n  |list\n    |* Item"
+    val input = "|section Foo\n  Paragraph\n  |list\n    |item Item"
     val parsed = parse(input)
     val output = compile(parsed)
 
     output should be("\\section*{Foo}\nParagraph\n\\begin{itemize}\n\\item Item\n\\end{itemize}")
+  }
+
+  "A list" should "be able to contain nested sublists" in {
+    val input = "|list\n  |item Foo\n  |list\n    |item Bar\n  |item Baz"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be("\\begin{itemize}\n\\item Foo\n\\begin{itemize}\n\\item Bar\n\\end{itemize}\n\\item Baz\n\\end{itemize}")
   }
 
   "Bold and Italics" should "work or something" in {
