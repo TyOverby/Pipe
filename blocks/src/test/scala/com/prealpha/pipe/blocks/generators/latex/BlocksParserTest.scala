@@ -130,4 +130,15 @@ class BlocksParserTest extends FlatSpec with Matchers {
     val file = "hello\n  world"
     val blocks = parse(file)
   }
+
+  "a multi-leveled block" should "parse correctly" in {
+    val file = "|a/b/c foo"
+    val blocks = parse(file)
+
+    blocks should be (List(genPipeBlock("a", lineNum=1, children = List(
+      genPipeBlock("b", lineNum = 1, children=List(
+        genPipeBlock("c", "foo", lineNum = 1)
+      ))
+    ))))
+  }
 }

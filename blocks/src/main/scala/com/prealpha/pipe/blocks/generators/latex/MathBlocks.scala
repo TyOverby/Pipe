@@ -48,8 +48,7 @@ object MathBlock extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     def parseInline(s: String): (String, ResultContext) = {
       val isb = new StringBuilder
-      isb.append("\n")
-        .append("$")
+      isb.append("$")
         .append(MathParser(s).get)
         .append("$")
       (isb.toString(), ResultContext(Set("amsmath")))
@@ -60,10 +59,11 @@ object MathBlock extends BlockGenerator {
     else Nil
 
     val children = block.childBlocks.map({
-      case b@Block("_text", _, _, _, _) => {
+      case b@Block("_text", _, _, _, _, _) => {
         merge(b.childLines.map(parseInline))
       }
-      case b@Block("equation", _, _, _, _) => compile(b)
+      case b@Block("equation", _, _, _, _, _) => compile(b)
+      case x => throw new BlockException(x, "The |equation is allowd inside of |math")
     })
 
     merge(argline ++ children)

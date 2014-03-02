@@ -1,4 +1,5 @@
 package com.prealpha.pipe.blocks.generators
+
 import com.prealpha.pipe.blocks.Block
 
 case class BlockException(block: Block, message: String)
