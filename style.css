@@ -1,0 +1,47 @@
+html, body {
+    padding: 0px;
+    margin: 0px;
+  font-family: 'Cardo';
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Cardo';
+  margin: 0px;
+  padding:0px;
+}
+
+header>h1 {
+    font-size: 3em;
+    text-align: center;
+}
+
+header>h2 {
+    text-align: center;
+}
+
+header {
+    margin-bottom: 30px;
+}
+
+
+@media (min-width:900px) {
+    #container {
+        width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width:899px) {
+    #container {
+        width: 100%;
+    }
+}
+
+#container {
+    padding: 5px;
+}
+
+pre {
+    font-size: 1.2em;
+}
