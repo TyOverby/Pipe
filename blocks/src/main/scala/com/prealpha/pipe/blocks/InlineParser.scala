@@ -24,7 +24,7 @@ object InlineParser extends RegexParsers {
         else
           block.childLines
       val parsedChildBlocks = block.childBlocks.map(apply).map(_.get)
-      val parsedBlock = Block(block.instance, parsedArgLine, block.level, parsedChildLines, parsedChildBlocks)
+      val parsedBlock = Block(block.instance, parsedArgLine, block.level, block.lineNum, parsedChildLines, parsedChildBlocks)
       scala.util.Success(parsedBlock)
     } catch {
       case px: ParseException[_] => scala.util.Failure(px)

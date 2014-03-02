@@ -5,19 +5,25 @@ import org.scalatest._
 
 class BlocksParserTest extends FlatSpec with Matchers {
   def genTextBlockList(text: List[String], args: String = "",
-                       level: Int = 0, children: List[Block] = List()) =
-    genPipeBlock("_text", args, level, text, children)
+                       level: Int = 0, lineNum: Int, children: List[Block] = List()) =
+    genPipeBlock("_text", args, level, lineNum, text, children)
 
   def genTextBlock(text: String, args: String = "",
-                   level: Int = 0, children: List[Block] = List()) =
-    genPipeBlock("_text", args, level, List(text), children)
+                   level: Int = 0, lineNum: Int, children: List[Block] = List()) =
+    genPipeBlock("_text", args, level, lineNum, List(text), children)
 
   def genPipeBlock(instance: String, args: String = "",
-                   level: Int = 0, childLines: List[String] = List(), children: List[Block] = List()) =
-    Block(instance, args, level, childLines, children)
+                   level: Int = 0, lineNum: Int, childLines: List[String] = List(), children: List[Block] = List()) =
+    Block(instance, args, level, lineNum, childLines, children)
 
   def parse(s: String): List[Block] = {
     BlocksParser.parse(s).childBlocks
+  }
+
+  def assertEqual(should: Block, actual: Block) {
+    actual.instance should be(should.instance)
+    actual.argLine should be (should.argLine)
+    actual.level should be (should.level)
   }
 
 
@@ -39,21 +45,21 @@ class BlocksParserTest extends FlatSpec with Matchers {
     val file = "hello"
     val blocks = parse(file)
 
-    blocks should be(List(genTextBlock("hello")))
+    blocks should be(List(genTextBlock("hello", lineNum = 1)))
   }
 
   "multiple words on the same line" should "produce a text block" in {
     val file = "hello world"
     val blocks = parse(file)
 
-    blocks should be(List(genTextBlock("hello world")))
+    blocks should be(List(genTextBlock("hello world", lineNum = 1)))
   }
 
   "multiple words on different lines" should "produce a single text block" in {
     val file = "hello\nworld"
     val blocks = parse(file)
 
-    blocks should be(List(genTextBlockList(List("hello", "world"))))
+    blocks should be(List(genTextBlockList(List("hello", "world"), lineNum = 1)))
   }
 
   "multiple words on different lines separated by a gap" should
@@ -62,28 +68,28 @@ class BlocksParserTest extends FlatSpec with Matchers {
     val file = "hello\n\nworld"
     val blocks = parse(file)
 
-    blocks should be(List(genTextBlock("hello"), genTextBlock("world")))
+    blocks should be(List(genTextBlock("hello", lineNum = 1), genTextBlock("world", lineNum = 3)))
   }
 
   "a single pipe" should "produce a single pipe block" in {
     val file = "|hello"
     val blocks = parse(file)
 
-    blocks should be(List(genPipeBlock("hello")))
+    blocks should be(List(genPipeBlock("hello", lineNum = 1)))
   }
 
   "a single pipe with an argument" should "produce a single pipe block" in {
     val file = "|hello world"
     val blocks = parse(file)
 
-    blocks should be(List(genPipeBlock("hello", "world")))
+    blocks should be(List(genPipeBlock("hello", "world", lineNum = 1)))
   }
 
   "two pipes next to each other" should "produce two pipes at the same level" in {
     val file = "|hello\n|world"
     val blocks = parse(file)
 
-    blocks should be(List(genPipeBlock("hello"), genPipeBlock("world")))
+    blocks should be(List(genPipeBlock("hello", lineNum = 1), genPipeBlock("world", lineNum = 2)))
   }
 
   "two pipes, one nested in the other" should "produce the correct structure" in {
@@ -91,8 +97,8 @@ class BlocksParserTest extends FlatSpec with Matchers {
     val blocks = parse(file)
 
     blocks should be(List(
-      genPipeBlock("hello", childLines = List("  |world"), children = List(
-        genPipeBlock("world", level = 2)
+      genPipeBlock("hello", lineNum = 1, childLines = List("  |world"), children = List(
+        genPipeBlock("world", level = 2, lineNum = 2)
       ))))
   }
 
@@ -102,9 +108,9 @@ class BlocksParserTest extends FlatSpec with Matchers {
     val blocks = parse(file)
 
     blocks should be(List(
-      genPipeBlock("hello", childLines = List("  |there", "  |world"), children = List(
-        genPipeBlock("there", level = 2),
-        genPipeBlock("world", level = 2)
+      genPipeBlock("hello", lineNum = 1, childLines = List("  |there", "  |world"), children = List(
+        genPipeBlock("there", level = 2, lineNum = 2),
+        genPipeBlock("world", level = 2, lineNum = 3)
       ))))
   }
 
@@ -114,9 +120,9 @@ class BlocksParserTest extends FlatSpec with Matchers {
     val blocks = parse(file)
 
     blocks should be(List(
-      genPipeBlock("hello", childLines = List("  There", "  |cmd"), children = List(
-        genTextBlock("  There", level = 2),
-        genPipeBlock("cmd", level = 2)
+      genPipeBlock("hello", lineNum = 1, childLines = List("  There", "  |cmd"), children = List(
+        genTextBlock("  There", level = 2, lineNum = 2),
+        genPipeBlock("cmd", level = 2, lineNum = 3)
       ))))
   }
 

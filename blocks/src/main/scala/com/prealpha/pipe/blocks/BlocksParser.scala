@@ -7,7 +7,7 @@ import scala.util.control.Breaks._
 object BlocksParser {
 
   def parse(chunk: String): Block = {
-    val root = new BlockBuilder("_root", "", -1)
+    val root = new BlockBuilder("_root", "", -1, 0)
 
     val stack = new util.Stack[BlockBuilder]
     var last = List[BlockBuilder]()
@@ -30,21 +30,23 @@ object BlocksParser {
       last = block :: last
     }
 
-    for (line <- chunk.split("\n")) {
+    for ((line, lineNum_) <- chunk.split("\n").zipWithIndex) {
+      // Lines in a text file are 1 based
+      val lineNum = lineNum_ + 1;
       val trimmed = line.trim
 
       val bb =
         if (trimmed.length == 0) {
           // Blank line
-          new BlockBuilder("_blank", "", if (last.head.level != -1) last.head.level else 0)
+          new BlockBuilder("_blank", "", if (last.head.level != -1) last.head.level else 0, lineNum)
         } else if (trimmed.head == '|' && !trimmed.tail.head.isWhitespace) {
           // Pipe decl
           new BlockBuilder(trimmed.tail.takeWhile(!_.isWhitespace),
             trimmed.dropWhile(!_.isWhitespace).trim,
-            line.takeWhile(_.isWhitespace).length)
+            line.takeWhile(_.isWhitespace).length, lineNum)
         } else {
           // Text line
-          new BlockBuilder("_textline", line, line.takeWhile(_.isWhitespace).length)
+          new BlockBuilder("_textline", line, line.takeWhile(_.isWhitespace).length, lineNum)
         }
 
       insertNode(bb, line)
@@ -66,7 +68,7 @@ object BlocksParser {
           child.lst.foreach(bb.addChild)
         } else {
           insideText = true
-          bb = new BlockBuilder("_text", "", child.level)
+          bb = new BlockBuilder("_text", "", child.level, child.lineNum)
           bb.addLine(child.argLine)
           child.lst.foreach(bb.addChild)
         }
