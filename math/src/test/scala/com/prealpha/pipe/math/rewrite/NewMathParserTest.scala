@@ -7,7 +7,10 @@ class NewMathParserTest extends FlatSpec with Matchers {
   def parse(s: String): Seq[MathExpr] =  NewMathParser.tryParse(s).get
   def parse1(s: String): MathExpr = {
     val parsed = NewMathParser.tryParse(s).get
-    assert(parsed.length == 1)
+    if(parsed.length != 1) {
+      println(parsed)
+      assert(parsed.length == 1)
+    }
     parsed.head
   }
 
@@ -23,11 +26,15 @@ class NewMathParserTest extends FlatSpec with Matchers {
 
   it should "handle vertical division" in {
     parse("a + b / c") should be (List(Chunk("a"), Chunk("+"), OverDiv(Chunk("b"), Chunk("c"))))
+    parse1("(a + b / c)") should be (Paren(Seq(Chunk("a"), Chunk("+"), OverDiv(Chunk("b"), Chunk("c")))))
+    parse1("(a + b) / c") should be (OverDiv(Paren(Seq(Chunk("a"), Chunk("+"), Chunk("b"))), Chunk("c")))
     parse("a + b // c") should be (List(Chunk("a"), Chunk("+"), SideDiv(Chunk("b"), Chunk("c"))))
   }
 
   it should "handle superscripts" in {
     parse1("2 ^ n") should be (SuperScript(Chunk("2"), Chunk("n")))
+    // Fuck yeah
+    parse1("x^-1") should be (SuperScript(Chunk("x"), Chunk("-1")))
     parse1("2 ^ (n + 1)") should be (SuperScript(Chunk("2"), Paren(Seq(Chunk("n"), Chunk("+"), Chunk("1")))))
     parse1("(n + 1) ^ 2") should be (SuperScript(Paren(Seq(Chunk("n"), Chunk("+"), Chunk("1"))), Chunk("2")))
   }
@@ -52,4 +59,21 @@ class NewMathParserTest extends FlatSpec with Matchers {
     )))
   }
 
+  "chunks of different types" should "be broken up" in {
+    parse("a+b") should be (Seq(Chunk("a"), Chunk("+"), Chunk("b")))
+    // This reason right here is why we break up chunks by type...
+    parse("a+b/c") should be (Seq(Chunk("a"), Chunk("+"), OverDiv(Chunk("b"), Chunk("c"))))
+    parse("a+1/-2") should be (Seq(Chunk("a"), Chunk("+"), OverDiv(Chunk("1"), Chunk("-2"))))
+  }
+
+  "numeric chunks" should "not get broken apart" in {
+    parse1("-1.34") should be (Chunk("-1.34"))
+  }
+
+  "operator precedence" should "hold" in {
+    parse1("(a+b)/c") should be (OverDiv(Paren(Seq(Chunk("a"), Chunk("+"), Chunk("b"))), Chunk("c")))
+    parse1("a_1 / 5")  should be (OverDiv(SubScript(Chunk("a"), Chunk("1")), Chunk("5")))
+    parse1("a^(1+x) / 5")  should be (OverDiv(SuperScript(Chunk("a"), Paren(Seq(Chunk("1"), Chunk("+"), Chunk("x")))),
+      Chunk("5")))
+  }
 }
