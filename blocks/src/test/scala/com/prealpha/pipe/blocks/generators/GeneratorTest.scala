@@ -152,13 +152,31 @@ class GeneratorTest extends FlatSpec with Matchers {
     output should be("\\begin{itemize}\n\\item Foo\n\\begin{itemize}\n\\item Bar\n\\end{itemize}\n\\item Baz\n\\end{itemize}")
   }
 
-  "Bold and Italics" should "work or something" in {
-    val input = "|bold Hi"
+  "Bold and Italics with just an argument" should "produce a captured argument" in {
+    val input = "|bold Hi\n|italic There"
     val parsed = parse(input)
     val output = compile(parsed)
 
-    output should be("\\bfshape\nHi\n\\normalshape")
+    output should be("\\textbf{Hi}\n\\textit{There}")
   }
+
+  "Bold and Italics with just a body" should "produce a valid paragraph layout" in {
+    val input = "|bold\n  Hello\n\n  World"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be("\\textbf{\nHello\n\nWorld}")
+  }
+
+  "Bold and Italics with an arg and a body (discouraged)" should "be seperated by a newline" in {
+    val input = "|bold Foo\n  Bar"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be("\\textbf{Foo\nBar}")
+  }
+
+
 
   "The \"pre\" text block" should "wrap correctly" in {
     val input = "|raw\n hello\n world\n     Woo"
