@@ -65,8 +65,4 @@ object NewMathParser extends RegexParsers with PackratParsers {
       }
     }
   }
-
-  def tryParse(br: BufferedReader) : Try[Seq[MathExpr]] = {
-
-  }
 }

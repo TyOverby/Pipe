@@ -82,21 +82,28 @@ object CodeGen {
   }
 
   def genMacro(m: Macro): String = {
-    val easyMap = Map("sum" -> "sum", "prod" -> "prod", "integral" -> "int", "int" -> "int")
+    val easyMap = Map("sum" -> "sum", "prod" -> "prod",
+      "product" -> "prod",
+      "integral" -> "int", "int" -> "int")
     val actuallySuper = Set("cases", "matrix")
 
     (m.name, m.c.map(genEntire)) match {
-      case ("sqrt", List(contents)) => s"\\sqrt$contents"
+      case ("sqrt", List(contents)) => s"\\sqrt{$contents}"
+      case ("sqrt", _) => throw new ParseException("!sqrt(...) takes one argument", "", "")
 
       case (s, List()) if easyMap.contains(s) => s"\\${easyMap(s)}"
       case (s, List(lower)) if easyMap.contains(s) => s"\\${easyMap(s)}_{$lower}"
       case (s, List(lower, upper)) if easyMap.contains(s) => s"\\${easyMap(s)}_{$lower}{$upper}"
+      case (s, _) if easyMap.contains(s) => throw new ParseException(s"!$s(...) takes either 0, 1, or 2 arguments.", "", "")
 
       case ("limit", List())  => "\\lim"
       case ("limit", List(under)) => s"\\lim_{$under}"
       case ("limit", List(varx, bound)) => s"\\lim_{$varx \\to $bound}"
+      case ("limit", _) => throw new ParseException("!limit(...) takes either 0, 1, or 2 arguments.", "", "")
 
       case (name, _) if actuallySuper.contains(name) => genSuperMacro(SuperMacro(name, Seq(m.c)))
+
+      case _ => throw new ParseException(s"No pattern found for macro ${m.name}", "", "")
     }
   }
 
@@ -108,9 +115,9 @@ object CodeGen {
             "Contains an argument list that is not 2 arguments long","","")
 
         cases.map(_.mkString(" & "))
-             .mkString("\\begin{cases}\n", " \\", "\\end{cases}")
+             .mkString("\\begin{cases}\n", " \\\n", "\n\\end{cases}")
       case ("matrix", rows) =>
-        val flatRows = rows.map(" " + _.mkString(" & "))
+        val flatRows = rows.map(_.mkString(" & "))
         val rowsStr = flatRows.mkString(" \\\\\n")
         val colCount = rows.map(_.length).max
         val colStr = "c" * colCount

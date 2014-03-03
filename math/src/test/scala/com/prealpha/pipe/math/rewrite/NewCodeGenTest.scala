@@ -2,6 +2,7 @@ package com.prealpha.pipe.math.rewrite
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest._
+import com.prealpha.pipe.math.ParseException
 
 class NewCodeGenTest extends FlatSpec with ShouldMatchers{
   def compile(expr: MathExpr*): String = CodeGen.genEntire(expr)
@@ -112,7 +113,58 @@ class NewCodeGenTest extends FlatSpec with ShouldMatchers{
     }
   }
 
-  "macros" should "" in {
+  "basic macros" should "compile correctly" in {
+    compile(Macro("sqrt", Seq(Seq(Chunk("x"))))) should be ("\\sqrt{x}")
+    compile(Macro("sqrt", Seq(Seq(Chunk("x"), Chunk("+"), Symbol("alpha"))))) should be {
+      "\\sqrt{x + \\alpha}"
+    }
+    intercept[ParseException[_]] {
+      compile(Macro("sqrt", Seq()))
+    }
 
+    compile(Macro("sum", Seq())) should be ("\\sum")
+    compile(Macro("sum", Seq(Seq(Chunk("a"))))) should be ("\\sum_{a}")
+    compile(Macro("sum", Seq(Seq(Chunk("i = 0"))))) should be ("\\sum_{i = 0}")
+    compile(Macro("sum", Seq(Seq(Chunk("i"), Chunk("="), Chunk("0"))))) should be ("\\sum_{i = 0}")
+    compile(Macro("sum", Seq(Seq(Chunk("i = 0"))))) should be ("\\sum_{i = 0}")
+    intercept[ParseException[_]] {
+      compile(Macro("sum",Seq(Seq(), Seq(), Seq())))
+    }
+
+    compile(Macro("limit", Seq())) should be ("\\lim")
+    compile(Macro("limit", Seq(Seq(Chunk("i to 0"))))) should be ("\\lim_{i to 0}")
+    compile(Macro("limit", Seq(Seq(Chunk("i")), Seq(Symbol("inf"))))) should be ("\\lim_{i \\to \\inf}")
+    intercept[ParseException[_]] {
+      compile(Macro("limit", Seq(Seq(), Seq(), Seq())))
+    }
+  }
+
+  "the cases supermacro" should "compile correctly" in {
+    compile(SuperMacro("cases", Seq(
+      Seq(Seq(Chunk("x"), Chunk("<"), Chunk("5")), Seq(Chunk("foo"))),
+      Seq(Seq(Chunk("x"), Chunk(">="), Chunk("5")), Seq(Chunk("bar")))
+    ))) should be {
+      "\\begin{cases}\n" +
+      "x < 5 & foo \\\n" +
+      "x >= 5 & bar\n" +
+      "\\end{cases}"
+    }
+    // TODO(TyOverby): More tests
+  }
+
+  "the matrix supermacro" should "compile correctly" in {
+    compile(SuperMacro("matrix", Seq(
+      Seq(Seq(Chunk("a")), Seq(Chunk("b")), Seq(Chunk("c"))),
+      Seq(Seq(Chunk("d")), Seq(Chunk("e")), Seq(Chunk("f"))),
+      Seq(Seq(Chunk("g")), Seq(Chunk("h")), Seq(Chunk("i")))
+    ))) should be {
+      "\\left( \\begin{array}{ccc}\n" +
+      "a & b & c \\\\\n" +
+      "d & e & f \\\\\n" +
+      "g & h & i\n" +
+      "\\end{array} \\right)"
+    }
+
+    // TODO(TyOverby): More Tests
   }
 }
