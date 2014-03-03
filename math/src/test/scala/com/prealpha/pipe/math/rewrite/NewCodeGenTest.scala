@@ -111,4 +111,8 @@ class NewCodeGenTest extends FlatSpec with ShouldMatchers{
       "x_{a + b}"
     }
   }
+
+  "macros" should "" in {
+
+  }
 }

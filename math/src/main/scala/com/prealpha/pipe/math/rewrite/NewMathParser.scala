@@ -16,7 +16,7 @@ object NewMathParser extends RegexParsers with PackratParsers {
   def cons[A](expr: ~[A, List[A]]): List[A] = expr._1 :: expr._2
 
   lazy val expr: PackratParser[MathExpr] =
-    overDiv | sideDiv | superScript | subScript  |
+     overDiv | sideDiv | superScript | subScript |
     paren   | symbol  | marco       | superMarco |
     (numericChunk    | symbolicChunk | characterChunk)
 
@@ -64,5 +64,9 @@ object NewMathParser extends RegexParsers with PackratParsers {
         case NoSuccess(msg, next) => scala.util.Failure(new ParseException(msg, input, next))
       }
     }
+  }
+
+  def tryParse(br: BufferedReader) : Try[Seq[MathExpr]] = {
+
   }
 }
