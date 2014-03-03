@@ -76,4 +76,11 @@ class NewMathParserTest extends FlatSpec with Matchers {
     parse1("a^(1+x) / 5")  should be (OverDiv(SuperScript(Chunk("a"), Paren(Seq(Chunk("1"), Chunk("+"), Chunk("x")))),
       Chunk("5")))
   }
+
+  "division" should "be nestable" in {
+    parse1("(a / b) / c") should be (OverDiv(Paren(Seq(OverDiv(Chunk("a"), Chunk("b")))), Chunk("c")))
+    parse1("(a / b) / (c / d)") should be (
+      OverDiv(Paren(Seq(OverDiv(Chunk("a"), Chunk("b")))), Paren(Seq(OverDiv(Chunk("c"), Chunk("d")))))
+    )
+  }
 }
