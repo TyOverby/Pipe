@@ -1,6 +1,5 @@
-package com.prealpha.pipe.math.rewrite
+package com.prealpha.pipe.math
 
-import com.prealpha.pipe.math.ParseException
 
 object CodeGen {
   def genEntire(exprs: Seq[MathExpr]): String = {
@@ -24,6 +23,8 @@ object CodeGen {
     expr match {
       case Chunk(s) => sb ++= s
       case Symbol(s) => sb ++= "\\" ++= s
+      case Comment(s) => sb ++= "&& " ++= "\\text{" ++= s ++= "}"
+      case Align(o) => sb ++= "&"; genSingle(o)
       case Paren(xs) =>
         sb ++= "\\left( "
         genMulti(xs)

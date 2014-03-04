@@ -19,7 +19,7 @@ class MathBlocksTest extends FlatSpec with Matchers {
     val parsed = parse(input)
     val output = compile(parsed)
 
-    output should be("\\begin{align*}\n\\dfrac{a+b}{c}\n\\end{align*}")
+    output should be("\\begin{align*}\n\\dfrac{a + b}{c}\n\\end{align*}")
   }
 
   "two equations with a line break" should "produce the valid line break" in {
@@ -27,22 +27,22 @@ class MathBlocksTest extends FlatSpec with Matchers {
     val parsed = parse(input)
     val output = compile(parsed)
 
-    output should be("\\begin{align*}\n\\dfrac{a+b}{c} \\\\\n\\dfrac{a}{c} + \\dfrac{b}{c}\n\\end{align*}")
+    output should be("\\begin{align*}\n\\dfrac{a + b}{c} \\\\\n\\dfrac{a}{c} + \\dfrac{b}{c}\n\\end{align*}")
   }
 
   "equation groups with text explanation" should "produce \\text commands and align correctly" in {
     val input = "|equation =\n  (a + b) / c = (a) / c + (b) / c # distribution (sort of)"
     compile(parse(input)) should
-      be("\\begin{align*}\n\\dfrac{a+b}{c} &= \\dfrac{a}{c} + \\dfrac{b}{c} && \\text{distribution (sort of)}\n\\end{align*}")
+      be("\\begin{align*}\n\\dfrac{a + b}{c} &= \\dfrac{a}{c} + \\dfrac{b}{c} && \\text{distribution (sort of)}\n\\end{align*}")
   }
 
   "an equation block with a newline afterwards" should "not produce an extra newline in the output latex" in {
     val input = "|equation\n  a+b=c\n  \n"
-    compile(parse(input)) should be("\\begin{align*}\na+b=c\n\\end{align*}")
+    compile(parse(input)) should be("\\begin{align*}\na + b = c\n\\end{align*}")
   }
   "an equation with multiple forms with a newline afterwards" should "not produce an extra newline in the output latex" in {
     val input = "|equation\n  a+b=c\n  c=a+b\n  \n|equation\n  a+b+c"
-    compile(parse(input)) should be("\\begin{align*}\na+b=c \\\\\nc=a+b\n\\end{align*}\n\\begin{align*}\na+b+c\n\\end{align*}")
+    compile(parse(input)) should be("\\begin{align*}\na + b = c \\\\\nc = a + b\n\\end{align*}\n\\begin{align*}\na + b + c\n\\end{align*}")
   }
 
 }

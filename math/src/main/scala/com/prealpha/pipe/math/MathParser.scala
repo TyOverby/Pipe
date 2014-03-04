@@ -1,155 +1,70 @@
 package com.prealpha.pipe.math
 
+import scala.util.parsing.combinator.{PackratParsers, RegexParsers}
+import scala.util.parsing.combinator.token.Tokens
 import scala.util.Try
-import scala.util.parsing.combinator.RegexParsers
+import java.io.{BufferedReader, StringReader}
+import scala.util.parsing.input.PagedSeqReader
+import scala.collection.immutable.PagedSeq
 
-/*
- * The precedence of the various expression types is kind of unclear from the code.
- * basicExpr has the highest precedence, followed by binaryExpr and then expr.
- */
-object MathParser extends RegexParsers {
-  def apply(input: String): Try[String] = {
-    if (input.trim == "")
-      scala.util.Success(input)
-    else
-      parse(math, input) match {
+object MathParser extends RegexParsers with PackratParsers {
+  override def skipWhitespace = true
+
+  def middle[L,R, Res](f: (L, R) => Res)(expr: ~[~[L,_],R]): Res = {
+    f(expr._1._1, expr._2)
+  }
+  def cons[A](expr: ~[A, List[A]]): List[A] = expr._1 :: expr._2
+
+  lazy val expr: PackratParser[MathExpr] =
+     comment | overDiv | sideDiv | superScript | subScript |
+    paren   | symbol  | marco       | superMarco |
+    (numericChunk    | symbolicChunk | characterChunk)
+
+  // Used for the arguments to super and sub scripts.
+  lazy val scriptExpr: PackratParser[MathExpr] =
+    paren   | symbol  | marco       | superMarco |
+    (numericChunk    | symbolicChunk | characterChunk)
+
+
+
+  lazy val symbolicChunk: PackratParser[MathExpr] = "[^()!:#;,/_\\ ^a-zA-Z0-9]+".r ^^ Chunk
+  lazy val characterChunk: PackratParser[MathExpr] = "[a-zA-Z]+".r ^^ Chunk
+  lazy val numericChunk: PackratParser[MathExpr] = "-?[0-9.]+".r ^^ Chunk
+
+  lazy val symbol: PackratParser[MathExpr] = ":" ~> "[a-zA-Z]+".r ^^ Symbol
+
+  lazy val comment: PackratParser[MathExpr] = "#" ~> "[^\\n]*".r <~ "$".r  ^^ Comment
+
+  lazy val paren: PackratParser[MathExpr] = "(" ~> expr.* <~ ")" ^^ Paren
+
+  lazy val commaSep: PackratParser[Seq[Seq[MathExpr]]] = expr.* ~ ("," ~> expr.*).* ^^ cons
+
+  lazy val marco: PackratParser[MathExpr] = "!" ~> "[a-zA-Z]+".r ~ "("  ~ commaSep <~ ")" ^^ middle(Macro)
+
+  lazy val semiSep: PackratParser[Seq[Seq[Seq[MathExpr]]]] =  commaSep ~ (";" ~> commaSep).* ^^ cons
+
+  lazy val superMarco: PackratParser[MathExpr] = "!" ~> "[a-zA-Z]+".r ~ "(" ~ semiSep <~ ")" ^^ middle(SuperMacro)
+
+  lazy val superScript: PackratParser[MathExpr] = expr ~ "^" ~ scriptExpr ^^ middle(SuperScript)
+
+  lazy val subScript: PackratParser[MathExpr] = expr ~ "_" ~ scriptExpr ^^ middle(SubScript)
+
+  lazy val overDiv: PackratParser[MathExpr] = expr ~ "/" ~ expr ^^ middle(OverDiv)
+
+  lazy val sideDiv: PackratParser[MathExpr] = expr ~ "//" ~ expr ^^ middle(SideDiv)
+
+  def tryParse(input: String): Try[Seq[MathExpr]] = {
+    val sr = new StringReader(input)
+    val br = new BufferedReader(sr)
+    val psr = new PagedSeqReader(PagedSeq.fromReader(br))
+    val pr = new PackratReader(psr)
+    if (input.forall(_.isWhitespace)) {
+      scala.util.Failure(new ParseException("", input, ""))
+    } else  {
+      parse(expr.+, pr) match {
         case Success(result, next) => scala.util.Success(result)
         case NoSuccess(msg, next) => scala.util.Failure(new ParseException(msg, input, next))
       }
-  }
-
-  override def skipWhitespace = false
-
-  def math: Parser[String] = phrase(spacedExpr.+) ^^ (_.mkString(" "))
-
-  def normalCharNoPunct: Parser[String] = "[^\\s/():!^_,;]".r | symbol
-
-  def normalChar: Parser[String] = normalCharNoPunct | "," | ";"
-
-  def exprNoPunct: Parser[String] = macro_ | binaryExprNoPunct
-
-  def expr: Parser[String] = exprNoPunct | binaryExpr
-
-  def binaryExprNoPunct: Parser[String] = horizontalDivide | verticalDivide | superscript | subscript | basicExprNoPunct
-
-  def binaryExpr: Parser[String] = binaryExprNoPunct | basicExpr
-
-  def slash: Parser[String] = whiteSpace.? ~> "/" <~ whiteSpace.?
-
-  def horizontalDivide: Parser[String] =
-    ((whiteSpace.? ~> parenExpr ~ slash ~ parenExpr <~ whiteSpace.?) |
-      (whiteSpace.? ~> parenExpr ~ slash ~ basicExpr <~ whiteSpace.?) |
-      (whiteSpace.? ~> basicExpr ~ slash ~ parenExpr <~ whiteSpace.?)) ^^ {
-      case leftExpr ~ slash ~ rightExpr => "\\dfrac{" + leftExpr + "}{" + rightExpr + "}"
-    }
-
-  def verticalDivide: Parser[String] = whiteSpace.? ~> basicExpr ~ slash ~ basicExpr <~ whiteSpace.? ^^ {
-    case leftExpr ~ slash ~ rightExpr => leftExpr + slash + rightExpr
-  }
-
-  def caret: Parser[String] = whiteSpace.? ~> "^" <~ whiteSpace.?
-
-  def superscript: Parser[String] =
-    ((whiteSpace.? ~> basicExpr ~ caret ~ parenExpr <~ whiteSpace.?) |
-      (whiteSpace.? ~> basicExpr ~ caret ~ normalChar <~ whiteSpace.?)) ^^ {
-      case leftExpr ~ caret ~ rightExpr => s"$leftExpr^{$rightExpr}"
-    }
-
-  def uscore: Parser[String] = whiteSpace.? ~> "_" <~ whiteSpace.?
-
-  def subscript: Parser[String] =
-    ((whiteSpace.? ~> basicExpr ~ uscore ~ parenExpr <~ whiteSpace.?) |
-      (whiteSpace.? ~> basicExpr ~ uscore ~ normalChar <~ whiteSpace.?)) ^^ {
-      // naturally, leftExpr_ is a valid identifier, so I can't use it directly
-      case leftExpr ~ uscore ~ rightExpr => s"$leftExpr$uscore{$rightExpr}"
-    }
-
-  def basicExprNoPunct: Parser[String] = text | (parenExpr ^^ {
-    "\\left(" + _ + "\\right)"
-  }) | normalExprNoPunct
-
-  def basicExpr: Parser[String] = basicExprNoPunct | normalExpr
-
-  def parenExpr: Parser[String] = "(" ~> spacedExpr.+ <~ ")" ^^ (_.mkString)
-
-  def normalExprNoPunct: Parser[String] = normalCharNoPunct.+ ^^ (_.mkString)
-
-  def normalExpr: Parser[String] = normalChar.+ ^^ (_.mkString)
-
-  def spacedExprNoPunct: Parser[String] = whiteSpace.? ~> exprNoPunct <~ whiteSpace.?
-
-  def spacedExpr: Parser[String] = whiteSpace.? ~> expr <~ whiteSpace.?
-
-  def exprList: Parser[List[String]] = spacedExprNoPunct ~ ("," ~> spacedExprNoPunct).* ^^ {
-    case head ~ tail => head :: tail
-  }
-
-  def twoExprList: Parser[String ~ String] = (spacedExprNoPunct <~ ",") ~ spacedExprNoPunct
-
-  def text: Parser[String] = quotedText | hashtagText
-
-  // TODO figure out how the hell quotation marks inside text will work
-  def quotedText: Parser[String] = "\"" ~> """[^"\n\r]*""".r <~ "\"" ^^ {
-    case str => s"\\text{$str}"
-  }
-
-  // the not(".".r) captures the end of string case
-  def hashtagText: Parser[String] = "#" ~> whiteSpace.? ~> """[^\n\r]*""".r <~ ("\n" | "\r" | not(".".r)) ^^ {
-    case str => s"&& \\text{$str}"
-  }
-
-  def symbol: Parser[String] = ":" ~> normalChar.+ ^^ ("\\" + _.mkString)
-
-  def macro_ : Parser[String] = new Parser[String] {
-    override def apply(in: Input): ParseResult[String] = ("!" ~> (normalChar.+ ^^ (_.mkString))).apply(in) match {
-      case Error(msg, next) => Error(msg, next)
-      case Failure(msg, next) => Failure(msg, next)
-      case Success(result, next) =>
-        val parser = result match {
-          case "sum" =>
-            twoExprList ^^ {
-              case start ~ end => s"\\sum_{$start}{$end}"
-            }
-          case "prod" =>
-            twoExprList ^^ {
-              case start ~ end => s"\\prod_{$start}{$end}"
-            }
-          case "integral" =>
-            twoExprList ^^ {
-              case start ~ end => s"\\int_{$start}{$end}"
-            }
-          case "limit" =>
-            twoExprList ^^ {
-              case variable ~ bound => s"\\lim_{$variable \\to $bound}"
-            }
-          case "sqrt" =>
-            spacedExpr ^^ {
-              case root => s"\\sqrt{$root}"
-            }
-          case "matrix" =>
-            (whiteSpace.? ~> exprList <~ whiteSpace.?) ~ (";" ~> whiteSpace.? ~> exprList <~ whiteSpace.?).* ^^ {
-              case first ~ rest =>
-                val list = first :: rest
-                val flatRows = list.map("  " + _.mkString(" & "))
-                val rowsStr = flatRows.mkString(" \\\\\n")
-                val colCount = list.map(_.length).max
-                val colStr = "c" * colCount
-                s"\\left( \\begin{array}{$colStr}\n$rowsStr\n\\end{array} \\right)"
-            }
-          case "cases" =>
-            (whiteSpace.? ~> twoExprList <~ whiteSpace.?) ~ ("," ~> whiteSpace.? ~> twoExprList <~ whiteSpace.?).* ^^ {
-              case head ~ tail =>
-                val list = head :: tail
-                val casesLines = list.mkString("\\\\")
-                "\\left{" + casesLines
-            }
-          case _ => null
-        }
-        if (parser != null)
-          ("(" ~> parser <~ ")").apply(next)
-        else
-        // guess that this is a zero-argument command
-          Success(s"\\$result", next)
     }
   }
 }

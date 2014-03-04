@@ -2,9 +2,21 @@ package com.prealpha.pipe.blocks.generators.latex
 
 import com.prealpha.pipe.blocks.Block
 import com.prealpha.pipe.blocks.generators._
-import com.prealpha.pipe.math.MathParser
+import com.prealpha.pipe.math._
 
 object EquationBlock extends BlockGenerator {
+  def processAlign(maths: Seq[MathExpr], alignTo: MathExpr): Seq[MathExpr] =
+    maths.map(a => processAlignOne(a, alignTo))
+
+
+  def processAlignOne(math: MathExpr, alignTo: MathExpr): MathExpr = math match {
+    case x if x == alignTo => Align(x)
+    case Paren(xs) => Paren(processAlign(xs, alignTo))
+    case Macro(n, o: Seq[_]) => Macro(n, o.map(a=>processAlign(a, alignTo)))
+    case SuperMacro(n, o: Seq[_]) => SuperMacro(n, o.map(_.map(a => processAlign(a, alignTo))))
+    case a => a
+  }
+
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean =
     block.instance == "equation"
 
@@ -14,28 +26,26 @@ object EquationBlock extends BlockGenerator {
 
     val numbered = args.contains("numbered")
 
-    if (numbered)
-      sb.append("\\begin{align}")
-    else
-      sb.append("\\begin{align*}")
+    sb ++= (if (numbered) "\\begin{align}" else "\\begin{align*}") ++= "\n"
 
-    sb.append("\n")
+    // TODO(TyOverby): rewrite, this is ugly as fuck
+    val alignOn: MathExpr = if (args.isEmpty) Never else MathParser.tryParse(args(0)).getOrElse(Seq(Never))(0)
 
-    // TODO this is really such a hack, it works though
+    // TODO(TyOverby): Handle alignment
     val alignedLines =
-      for (line <- block.childLines if line.exists(!_.isWhitespace))
-      yield (line /: args)((line, aligner) => line.replace(aligner, "&" + aligner))
+      for {rawLine <- block.childLines if rawLine.exists(!_.isWhitespace)
+          compLine = MathParser.tryParse(rawLine).get } yield {
+        processAlign(compLine, alignOn)
+      }
     val compiledLines =
       for (line <- alignedLines)
-      yield MathParser(line).get
+      // TODO(TyOverby, MeyerKizner): Handle the try.
+      yield CodeGen.genEntire(line)
 
     sb.append(compiledLines.mkString(" \\\\\n"))
 
-    sb.append("\n")
-    if (numbered)
-      sb.append("\\end{align}")
-    else
-      sb.append("\\end{align*}")
+    sb ++= "\n"
+    sb ++= (if (numbered) "\\end{align}" else "\\end{align*}")
 
     (sb.toString(), ResultContext(Set("amsmath")))
   }
@@ -49,7 +59,7 @@ object MathBlock extends BlockGenerator {
     def parseInline(s: String): (String, ResultContext) = {
       val isb = new StringBuilder
       isb.append("$")
-        .append(MathParser(s).get)
+        .append(CodeGen.genEntire(MathParser.tryParse(s).get))
         .append("$")
       (isb.toString(), ResultContext(Set("amsmath")))
     }

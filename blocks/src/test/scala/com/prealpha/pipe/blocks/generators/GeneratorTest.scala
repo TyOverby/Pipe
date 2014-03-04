@@ -207,7 +207,7 @@ class GeneratorTest extends FlatSpec with Matchers {
     val parsed = parse(input)
     val output = compile(parsed)
 
-    output should be("$a + b + c$\n$x - y - z$\n\\begin{align*}\na^{2} +b^{2} =c^{2}\n\\end{align*}")
+    output should be("$a + b + c$\n$x - y - z$\n\\begin{align*}\na^{2} + b^{2} = c^{2}\n\\end{align*}")
   }
 
   "multiblock with math" should "work" in {
