@@ -10,11 +10,11 @@ object Build extends sbt.Build {
     )
 
     lazy val root = Project(
-        id = "multi-module",
+        id = "vulcan",
         base = file("."),
         settings = commonSettings ++ packSettings ++
         Seq(
-            packMain := Map("blocks" -> "com.prealpha.pipe.blocks.generators.latex.LatexDocument")
+            packMain := Map("vulcan" -> "com.prealpha.pipe.blocks.generators.latex.LatexDocument")
         )
     ).dependsOn(math, blocks).aggregate(math, blocks)
 
