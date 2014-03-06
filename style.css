@@ -45,3 +45,7 @@ header {
 pre {
     font-size: 1.2em;
 }
+
+p {
+    text-align: justify;
+}
