@@ -85,30 +85,30 @@ class CodeGenTest extends FlatSpec with ShouldMatchers{
 
   "superscript" should "work as expected in simple cases" in {
     // :alpha^2
-    compile(SuperScript(math.Symbol("alpha"), Chunk("2"))) should be ("\\alpha^{2}")
+    compile(SuperScript(math.Symbol("alpha"), Chunk("2"))) should be ("{\\alpha}^{2}")
     // alpha^2
-    compile(SuperScript(Chunk("alpha"), Chunk("2"))) should be ("alpha^{2}")
+    compile(SuperScript(Chunk("alpha"), Chunk("2"))) should be ("{alpha}^{2}")
     // 5^x
-    compile(SuperScript(Chunk("5"), Chunk("x"))) should be ("5^{x}")
+    compile(SuperScript(Chunk("5"), Chunk("x"))) should be ("{5}^{x}")
   }
 
   it should "capture parenthated expressions" in {
     // x^(a + b)
     compile(SuperScript(Chunk("x"), Paren(List(Chunk("a"), Chunk("+"), Chunk("b"))))) should be {
-      "x^{a + b}"
+      "{x}^{a + b}"
     }
   }
 
   "subscript" should "do the same as superscript" in {
     // :alpha_2
-    compile(SubScript(math.Symbol("alpha"), Chunk("2"))) should be ("\\alpha_{2}")
+    compile(SubScript(math.Symbol("alpha"), Chunk("2"))) should be ("{\\alpha}_{2}")
     // alpha_2
-    compile(SubScript(Chunk("alpha"), Chunk("2"))) should be ("alpha_{2}")
+    compile(SubScript(Chunk("alpha"), Chunk("2"))) should be ("{alpha}_{2}")
     // 5_x
-    compile(SubScript(Chunk("5"), Chunk("x"))) should be ("5_{x}")
+    compile(SubScript(Chunk("5"), Chunk("x"))) should be ("{5}_{x}")
     // x_(a + b)
     compile(SubScript(Chunk("x"), Paren(List(Chunk("a"), Chunk("+"), Chunk("b"))))) should be {
-      "x_{a + b}"
+      "{x}_{a + b}"
     }
   }
 

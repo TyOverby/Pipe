@@ -32,23 +32,27 @@ object CodeGen {
       case m: Macro => sb ++= genMacro(m)
       case m: SuperMacro => sb ++= genSuperMacro(m)
       case SuperScript(normal, Paren(overs)) =>
+        sb ++= "{"
         genSingle(normal)
-        sb ++= "^{"
+        sb ++= "}^{"
         genMulti(overs)
         sb ++= "}"
       case SuperScript(normal, over) =>
+        sb ++= "{"
         genSingle(normal)
-        sb ++= "^{"
+        sb ++= "}^{"
         genSingle(over)
         sb ++= "}"
       case SubScript(normal, Paren(unders)) =>
+        sb ++= "{"
         genSingle(normal)
-        sb ++= "_{"
+        sb ++= "}_{"
         genMulti(unders)
         sb ++= "}"
       case SubScript(normal, under) =>
+        sb ++= "{"
         genSingle(normal)
-        sb ++= "_{"
+        sb ++= "}_{"
         genSingle(under)
         sb ++= "}"
       case OverDiv(Paren(xs), Paren(ys)) =>
