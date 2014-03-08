@@ -56,7 +56,7 @@ class TableBlockTest extends FlatSpec with Matchers {
         |  : $!matrix(1, 0, 0; 0, 1, 0; 0, 0, 1)$     : Add three times the third row to the first.  :
         |
       """.stripMargin.trim
-    println(compile(parse(markup1)))
+    compile(parse(markup1))
 
     val markup2 =
       """
@@ -80,6 +80,6 @@ class TableBlockTest extends FlatSpec with Matchers {
         |  | ---------------------------------------- | -------------------------------------------- |
         |
       """.stripMargin.trim
-    println(compile(parse(markup2)))
+    compile(parse(markup2))
   }
 }
