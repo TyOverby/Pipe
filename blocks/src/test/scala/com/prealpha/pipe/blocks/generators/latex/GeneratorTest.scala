@@ -2,6 +2,7 @@ package com.prealpha.pipe.blocks.generators.latex
 
 import com.prealpha.pipe.blocks.{BlocksParser, Block}
 import org.scalatest._
+import java.io.{PrintStream, ByteArrayOutputStream}
 
 class GeneratorTest extends FlatSpec with Matchers {
   def compile(b: Block): String = {

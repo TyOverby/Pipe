@@ -7,10 +7,11 @@ object DocumentBlock extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     val lines = block.childLines
 
-    val (valid, invalid) = lines.partition(_.contains("="))
+    val (valid, invalid) = lines
+      .filter(_.exists(!_.isWhitespace))
+      .partition(_.contains("="))
 
-    invalid.foreach(s =>
-      System.err.println("Warning! " + s + " is not a valid setting"))
+    invalid.foreach(s => Console.err.println(s"Warning! $s is not a valid setting"))
 
     val settings = valid.map(_.split("=").toList.map(_.trim)).map({
       case "author" :: name :: Nil => Some("\\author{" + name + "}")

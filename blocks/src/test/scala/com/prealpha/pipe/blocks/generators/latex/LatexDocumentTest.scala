@@ -1,6 +1,7 @@
 package com.prealpha.pipe.blocks.generators.latex
 
 import org.scalatest._
+import java.io.ByteArrayOutputStream
 
 class LatexDocumentTest extends FlatSpec with Matchers {
   def compile(s: String): String = {
@@ -78,5 +79,15 @@ class LatexDocumentTest extends FlatSpec with Matchers {
   "Document mode" should "parse and use the settings" in {
     val input = "|document\n  title = My Title\n  author = Ty Overby"
     compile(input) should be("\\documentclass[a4paper]{article}\n\\title{My Title}\n\\author{Ty Overby}\n\\begin{document}\n\\maketitle\n\\end{document}")
+  }
+
+  "document" should "not warn on empty lines" in {
+    val prev = System.err
+    val baos = new ByteArrayOutputStream
+    Console.withErr(baos) {
+      val input = "|document\n  title = Foo\n\n|section Foo"
+      compile(input)
+      baos.toString should be ("")
+    }
   }
 }

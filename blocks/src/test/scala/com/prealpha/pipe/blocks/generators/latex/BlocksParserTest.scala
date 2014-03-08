@@ -22,8 +22,8 @@ class BlocksParserTest extends FlatSpec with Matchers {
 
   def assertEqual(should: Block, actual: Block) {
     actual.instance should be(should.instance)
-    actual.argLine should be (should.argLine)
-    actual.level should be (should.level)
+    actual.argLine should be(should.argLine)
+    actual.level should be(should.level)
   }
 
 
@@ -135,8 +135,8 @@ class BlocksParserTest extends FlatSpec with Matchers {
     val file = "|a/b/c foo"
     val blocks = parse(file)
 
-    blocks should be (List(genPipeBlock("a", lineNum=1, children = List(
-      genPipeBlock("b", lineNum = 1, children=List(
+    blocks should be(List(genPipeBlock("a", lineNum = 1, children = List(
+      genPipeBlock("b", lineNum = 1, children = List(
         genPipeBlock("c", "foo", lineNum = 1)
       ))
     ))))
