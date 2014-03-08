@@ -106,6 +106,9 @@ object CodeGen {
       case ("limit", List(varx, bound)) => s"\\lim_{$varx \\to $bound}"
       case ("limit", _) => throw new ParseException("!limit(...) takes either 0, 1, or 2 arguments.", "", "")
 
+      case ("floor", List(contents)) => s"\\left \\lfloor{$contents}\\right \\rfloor"
+      case ("ceil", List(contents)) => s"\\left \\lceil{$contents}\\right \\rceil"
+
       case (name, _) if actuallySuper.contains(name) => genSuperMacro(SuperMacro(name, Seq(m.c)))
 
       case _ => throw new ParseException(s"No pattern found for macro ${m.name}", "", "")

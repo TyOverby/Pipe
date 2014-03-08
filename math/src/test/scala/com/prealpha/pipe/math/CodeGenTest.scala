@@ -172,4 +172,29 @@ class CodeGenTest extends FlatSpec with ShouldMatchers{
       "a b && \\text{a and b}"
     }
   }
+  "floor and ceil" should "work when used correctly" in {
+    compile(Macro("floor", Seq(
+      Seq(Chunk("foo"), Chunk("+"), Symbol("bar"))))) should be {
+      "\\left \\lfloor{foo + \\bar}\\right \\rfloor"
+    }
+    compile(Macro("ceil", Seq(
+      Seq(Chunk("foo"), Chunk("+"), Symbol("bar"))))) should be {
+      "\\left \\lceil{foo + \\bar}\\right \\rceil"
+    }
+  }
+
+  it should "fail when used incorrectly" in {
+    intercept[ParseException[_]]{
+      compile(Macro("floor", Seq()))
+    }
+    intercept[ParseException[_]]{
+      compile(Macro("ceil", Seq()))
+    }
+    intercept[ParseException[_]]{
+      compile(Macro("floor", Seq(Seq(), Seq())))
+    }
+    intercept[ParseException[_]]{
+      compile(Macro("ceil", Seq(Seq(), Seq())))
+    }
+  }
 }
