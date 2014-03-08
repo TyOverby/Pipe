@@ -1,8 +1,7 @@
-package com.prealpha.pipe.blocks.generators
+package com.prealpha.pipe.blocks.generators.latex
 
 import com.prealpha.pipe.blocks.{BlocksParser, Block}
 import org.scalatest._
-import com.prealpha.pipe.blocks.generators.latex.RootBlock
 
 class GeneratorTest extends FlatSpec with Matchers {
   def compile(b: Block): String = {
@@ -216,5 +215,13 @@ class GeneratorTest extends FlatSpec with Matchers {
     val output = compile(parsed)
 
     output should be("\\begin{itemize}\n\\item\n$a + b = c$\n\\item\n${a}^{2} + {b}^{2} = {c}^{2}$\n\\end{itemize}")
+  }
+
+  "latex-env" should "work correctly when provided valid inputs" in {
+    val input = "|latex-env foo\n  Bar\n  Baz"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be ("\\begin{foo}\n Bar\n Baz\n\\end{foo}")
   }
 }
