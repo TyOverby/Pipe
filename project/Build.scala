@@ -2,9 +2,12 @@ import sbt._
 import sbt.Keys._
 import xerial.sbt.Pack._
 
+import scala.scalajs.sbtplugin._
+import ScalaJSPlugin._
+
 object Build extends sbt.Build {
 
-    val commonSettings = Defaults.defaultSettings ++ Seq(
+    val commonSettings = Defaults.defaultSettings ++ scalaJSSettings ++ Seq(
         scalaVersion := "2.10.3",
         version := "0.1.0"
     )
