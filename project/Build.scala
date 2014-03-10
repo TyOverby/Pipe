@@ -27,7 +27,7 @@ object Build extends sbt.Build {
         base = file("math"),
         settings = scalaJSSettings ++ commonSettings ++ Seq(
             libraryDependencies += "org.xerial" % "xerial-core" % "3.2.1",
-            libraryDependencies += "org.scalatest" % "scalatest" % "latest.integration" % "test",
+            libraryDependencies += "org.scalatest" %% "scalatest" % "latest.integration",
             libraryDependencies += "org.scalajs" %% "scalajs-parser-combinators" % "1.0.0-SNAPSHOT"
         )
     )
@@ -37,7 +37,7 @@ object Build extends sbt.Build {
         base = file("blocks"),
         settings = scalaJSSettings ++ commonSettings ++ Seq(
             libraryDependencies += "org.xerial" % "xerial-core" % "3.2.1",
-            libraryDependencies += "org.scalatest" % "scalatest" % "latest.integration" % "test",
+            libraryDependencies += "org.scalatest" %% "scalatest" % "latest.integration",
             libraryDependencies += "org.scalajs" %% "scalajs-parser-combinators" % "1.0.0-SNAPSHOT"
         )
     ) dependsOn(math)

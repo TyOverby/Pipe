@@ -5,7 +5,7 @@ import scala.util.Try
 import scala.scalajs.js.annotation.JSExport
 
 @JSExport
-object Math {
+class LatexMath {
   def compile(source: String): Try[String] =
     MathParser.tryParse(source).map(CodeGen.genEntire)
 
