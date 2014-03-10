@@ -54,9 +54,7 @@ object MathParser extends RegexParsers with PackratParsers {
   lazy val sideDiv: PackratParser[MathExpr] = expr ~ "//" ~ expr ^^ middle(SideDiv)
 
   def tryParse(input: String): Try[Seq[MathExpr]] = {
-    val sr = new StringReader(input)
-    val br = new BufferedReader(sr)
-    val psr = new PagedSeqReader(PagedSeq.fromReader(br))
+    val psr = new PagedSeqReader(PagedSeq.fromStrings(List(input)))
     val pr = new PackratReader(psr)
     if (input.forall(_.isWhitespace)) {
       scala.util.Failure(new ParseException("", input, ""))
