@@ -2,7 +2,6 @@ package com.prealpha.pipe.blocks
 
 import java.util
 import scala.collection.JavaConversions.collectionAsScalaIterable
-import scala.util.control.Breaks._
 
 object BlocksParser {
 
