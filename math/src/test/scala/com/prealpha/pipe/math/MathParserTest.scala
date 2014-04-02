@@ -88,4 +88,5 @@ class MathParserTest extends FlatSpec with Matchers {
     parse("a + b # Add A and B") should be (Seq(Chunk("a"), Chunk("+"), Chunk("b"), Comment("Add A and B")))
     parse1("# a + # b") should be (Comment("a + # b"))
   }
+
 }
