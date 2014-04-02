@@ -28,19 +28,22 @@ object EquationBlock extends BlockGenerator {
 
     sb ++= (if (numbered) "\\begin{align}" else "\\begin{align*}") ++= "\n"
 
-    // TODO(TyOverby): rewrite, this is ugly as fuck
     val alignOn: MathExpr = if (args.isEmpty) Never else MathParser.tryParse(args(0)).getOrElse(Seq(Never))(0)
 
-    // TODO(TyOverby): Handle alignment
     val alignedLines =
-      for {rawLine <- block.childLines if rawLine.exists(!_.isWhitespace)
+      for {(rawLine, mathLineNum) <- block.childLines.zipWithIndex if rawLine.exists(!_.isWhitespace)
           compLine = MathParser.tryParse(rawLine).get } yield {
-        processAlign(compLine, alignOn)
+        (processAlign(compLine, alignOn), mathLineNum)
       }
     val compiledLines =
-      for (line <- alignedLines)
-      // TODO(TyOverby, MeyerKizner): Handle the try.
-      yield CodeGen.genEntire(line)
+      for ((line, mathLineNum)  <- alignedLines)
+      yield {
+        try {
+          CodeGen.genEntire(line)
+        } catch {
+          case ex: ParseException[_] => throw ex.copy(msg = ex.msg + s"on line ${block.lineNum + mathLineNum}")
+        }
+      }
 
     sb.append(compiledLines.mkString(" \\\\\n"))
 

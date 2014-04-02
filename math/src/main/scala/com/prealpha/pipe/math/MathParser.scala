@@ -59,7 +59,7 @@ object MathParser extends RegexParsers with PackratParsers {
     if (input.forall(_.isWhitespace)) {
       scala.util.Failure(new ParseException("", input, ""))
     } else  {
-      parse(expr.+, pr) match {
+      parse(phrase(expr.+), pr) match {
         case Success(result, next) => scala.util.Success(result)
         case NoSuccess(msg, next) => scala.util.Failure(new ParseException(msg, input, next))
       }
