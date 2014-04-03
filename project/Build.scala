@@ -6,7 +6,7 @@ object Build extends sbt.Build {
 
     val commonSettings = Defaults.defaultSettings ++ Seq(
         scalaVersion := "2.10.3",
-        version := "0.1.0"
+        version := "0.4.2"
     )
 
     lazy val root = Project(

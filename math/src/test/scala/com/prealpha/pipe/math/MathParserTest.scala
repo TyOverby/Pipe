@@ -59,6 +59,12 @@ class MathParserTest extends FlatSpec with Matchers {
     )))
   }
 
+  it should "parse @notation as macros" in {
+    parse1("foo@hat") should be (Macro("hat", Seq(Seq(Chunk("foo")))))
+    parse1(":Delta@vector") should be (Macro("vector", Seq(Seq(Symbol("Delta")))))
+    parse1("(a + b)@hat") should be (Macro("hat", Seq(Seq(Paren(Seq(Chunk("a"), Chunk("+"), Chunk("b")))))))
+  }
+
   "chunks of different types" should "be broken up" in {
     parse("a+b") should be (Seq(Chunk("a"), Chunk("+"), Chunk("b")))
     // This reason right here is why we break up chunks by type...

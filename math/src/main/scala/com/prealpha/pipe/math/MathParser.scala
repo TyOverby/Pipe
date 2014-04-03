@@ -16,7 +16,7 @@ object MathParser extends RegexParsers with PackratParsers {
   def cons[A](expr: ~[A, List[A]]): List[A] = expr._1 :: expr._2
 
   lazy val expr: PackratParser[MathExpr] =
-    comment | overDiv | sideDiv | superScript | subScript |
+    comment | overDiv | sideDiv | superScript | subScript | atNotation |
       paren | symbol | marco | superMarco |
       (numericChunk | symbolicChunk | characterChunk)
 
@@ -30,8 +30,8 @@ object MathParser extends RegexParsers with PackratParsers {
     case a => success(a)
   }
 
-  lazy val symbolicChunk: PackratParser[MathExpr] = "[^()!:#;/_\\ ^a-zA-Z0-9]+".r ^^ Chunk
-  lazy val characterChunk: PackratParser[MathExpr] = "[a-zA-Z]+".r ^^ Chunk
+  lazy val symbolicChunk: PackratParser[MathExpr] = "[^()@!:#;/_\\ ^a-zA-Z0-9]+".r ^^ Chunk
+  lazy val characterChunk: PackratParser[Chunk] = "[a-zA-Z]+".r ^^ Chunk
   lazy val numericChunk: PackratParser[MathExpr] = "-?[0-9.]+".r ^^ Chunk
 
   lazy val symbol: PackratParser[MathExpr] = ":" ~> "[a-zA-Z]+".r ^^ Symbol
@@ -51,6 +51,8 @@ object MathParser extends RegexParsers with PackratParsers {
   lazy val superScript: PackratParser[MathExpr] = expr ~ "^" ~ scriptExpr ^^ middle(SuperScript)
 
   lazy val subScript: PackratParser[MathExpr] = expr ~ "_" ~ scriptExpr ^^ middle(SubScript)
+
+  lazy val atNotation: PackratParser[MathExpr] = expr ~ "@" ~ characterChunk ^^ middle((a, b) => Macro(b.contents, Seq(Seq(a))))
 
   lazy val overDiv: PackratParser[MathExpr] = expr ~ "/" ~ expr ^^ middle(OverDiv)
 
