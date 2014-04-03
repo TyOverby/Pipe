@@ -15,7 +15,7 @@ class RegressionTest extends FlatSpec with Matchers {
     parsed.head
   }
 
-  "commas inside of blocks that are outside of the possibility of an argument" should "not throw errors" in {
+  "commas inside of document that are outside of the possibility of an argument" should "not throw errors" in {
     parse1("!sqrt((a + b)/(123,456))")
     parse1("!f((a + b)/123)")
     parse("!sqrt((a + b)/123)")
