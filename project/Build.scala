@@ -16,7 +16,7 @@ object Build extends sbt.Build {
         Seq(
             packMain := Map("vulcan" -> "com.prealpha.pipe.blocks.generators.latex.LatexDocument")
         )
-    ).dependsOn(math, blocks).aggregate(math, blocks)
+    ).dependsOn(math, document).aggregate(math, document)
 
     lazy val math = Project(
         id = "math",
@@ -27,9 +27,9 @@ object Build extends sbt.Build {
         )
     )
 
-    lazy val blocks = Project(
-        id = "blocks",
-        base = file("blocks"),
+    lazy val document = Project(
+        id = "document",
+        base = file("document"),
         settings = commonSettings ++ Seq(
             libraryDependencies += "org.xerial" % "xerial-core" % "3.2.1",
             libraryDependencies += "org.scalatest" % "scalatest_2.10" % "latest.integration" % "test"
