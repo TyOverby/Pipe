@@ -15,16 +15,19 @@ class RegressionTest extends FlatSpec with Matchers {
     parsed.head
   }
 
-  "commas inside of improperly formatted blocks" should "throw errors" in {
-    val input = "!sqrt((a + b)/(123,456))"
-    intercept[ParseException[_]]{
-      val parsed = parse1(input)
-    }
+  "commas inside of blocks that are outside of the possibility of an argument" should "not throw errors" in {
+    parse1("!sqrt((a + b)/(123,456))")
+    parse1("!f((a + b)/123)")
+    parse("!sqrt((a + b)/123)")
+  }
+
+  "commas by themselves" should "be fine" in {
+    parse("!sqrt(a, b) ,,,")
+    parse("!foo() / 5")
+    parse("!sqrt(a, b) / 5")
   }
   "commas outside of a well formatted section" should "throw errors" in {
     val input = "!sqrt((a + b)) / (123, 456)"
-    intercept[ParseException[_]]{
-      val parsed = parse1(input)
-    }
+    val parsed = parse1(input)
   }
 }
