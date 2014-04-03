@@ -4,15 +4,26 @@ Pipe
 [Download Build](https://github.com/TyOverby/Pipe/releases)
 
 
-## How to use
+##Usage
+      vulcan
+      vulcan (-i | --in | --input) <input_file> [(-o | --out | --output) <output_file>)]
+      vulcan <input_file> [(-o | --out | --output) <output_file>]
 
-### Linux
+## Options
+      -i --in  --input    Specify the input file.
+      -o --out --output   Specify the output file.
+      -h --help           Display this help
+      -                   Read from standard input
 
-    cd vulcan_0.4/pack/bin/
-    ./vulcan < inputFile.vlcn > outputFile.latex
-    
-### Windows
-Using Windows PowerShell
+## Examples
+### standard form
+    vulcan -i input.vlcn -o output.latex
+    vulcan input.vlcn -o output.latex
 
-    cd vulcan_0.4\pack\bin
-    Get-Content .\inputFile.vlcn | .\vulcan.bat > outputFile.latex
+###Read from standard input
+    vulcan -o output.latex -
+
+###Read from standard input and write to standard output
+    vulcan -
+    vulcan
+
