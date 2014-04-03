@@ -53,10 +53,4 @@ object LatexDocument {
 
     totalSb.toString()
   }
-
-  def main(args: Array[String]): Unit = {
-    val markup = Source.fromInputStream(System.in).getLines().mkString("\n")
-    val latex = compile(markup)
-    System.out.println(latex)
-  }
 }

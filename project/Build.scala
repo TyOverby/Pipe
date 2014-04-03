@@ -14,7 +14,7 @@ object Build extends sbt.Build {
         base = file("."),
         settings = commonSettings ++ packSettings ++
         Seq(
-            packMain := Map("vulcan" -> "com.prealpha.pipe.document.generators.latex.LatexDocument")
+            packMain := Map("vulcan" -> "com.prealpha.pipe.document.EntryPoint")
         )
     ).dependsOn(math, document).aggregate(math, document)
 
