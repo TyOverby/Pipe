@@ -1,4 +1,4 @@
-Pipe
+Pipe [![Build Status](https://travis-ci.org/TyOverby/Pipe.svg?branch=master)](https://travis-ci.org/TyOverby/Pipe)
 ====
 
 [Download Build](https://github.com/TyOverby/Pipe/releases)
