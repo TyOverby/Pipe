@@ -1,4 +1,11 @@
-Pipe
+Pipe / Scalajs
 ====
 
-[0.4.0 Build](http://tyoverby.com/Pipe/builds/vulcan_0-4.zip)
+# To Build
+
+    sbt packageJS
+
+# To Use
+
+The compiled files for math mode (the only mode working right now) are
+in ./math/target/scala-2.11.0-M8/.
