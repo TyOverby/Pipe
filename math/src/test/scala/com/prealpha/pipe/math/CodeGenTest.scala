@@ -183,8 +183,9 @@ class CodeGenTest extends FlatSpec with ShouldMatchers{
     }
   }
 
-  "hat and vector" should "work with both macro syntax" should be {
-    compile(Macro("hat", Seq()))
+  "hat and vector" should "work with both macro syntax" in {
+    intercept[ParseException[_]](compile(Macro("hat", Seq())))
+    compile(Macro("hat", Seq(Seq(Chunk("foo")))))
   }
 
   it should "fail when used incorrectly" in {

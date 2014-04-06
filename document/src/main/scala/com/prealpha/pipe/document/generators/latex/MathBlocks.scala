@@ -1,6 +1,6 @@
 package com.prealpha.pipe.document.generators.latex
 
-import com.prealpha.pipe.document.Block
+import com.prealpha.pipe.document.{ParseError, Block}
 import com.prealpha.pipe.document.generators._
 import com.prealpha.pipe.math._
 
@@ -43,8 +43,12 @@ object EquationBlock extends BlockGenerator {
       }.reverse
 
     // Parse and insert alignment into the equation
-    val alignedLines = for ((lineStr, lineNum) <- groupedLines) yield
-      (processAlign(MathParser.tryParse(lineStr).get, alignOn), lineNum)
+    val alignedLines = for ((lineStr, lineNum) <- groupedLines) yield {
+      MathParser.tryParse(lineStr) match {
+        case scala.util.Success(value) => (processAlign(value, alignOn), lineNum)
+        case scala.util.Failure(e) => throw new Exception(e.getMessage + "\n on line: \n" + lineStr)
+      }
+    }
 
     val compiledLines =
       for ((line, mathLineNum) <- alignedLines)
