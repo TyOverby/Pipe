@@ -77,6 +77,7 @@ object EntryPoint {
       val file = options.get("output").get
       val writer = new PrintWriter(file)
       writer.write(compiled)
+      writer.close()
     } else {
       println(compiled)
     }
