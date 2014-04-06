@@ -121,6 +121,12 @@ object CodeGen {
   }
 
   def genSuperMacro(m: SuperMacro): String = {
+    def matrixGen(ident: String, rows: Seq[Seq[String]]): String = {
+      val flatRows = rows.map(_.mkString(" & "))
+      val rowsStr = flatRows.mkString(" \\\\\n")
+      s"\\begin{${ident}matrix}\n" + rowsStr + s"\n\\end{${ident}matrix}"
+    }
+
     (m.name, m.c.map(_.map(genEntire))) match {
       case ("cases", cases) =>
         if (cases.exists(_.length != 2))
@@ -129,12 +135,12 @@ object CodeGen {
 
         cases.map(_.mkString(" & "))
              .mkString("\\begin{cases}\n", " \\\n", "\n\\end{cases}")
-      case ("matrix", rows) =>
-        val flatRows = rows.map(_.mkString(" & "))
-        val rowsStr = flatRows.mkString(" \\\\\n")
-        val colCount = rows.map(_.length).max
-        val colStr = "c" * colCount
-        s"\\left( \\begin{array}{$colStr}\n$rowsStr\n\\end{array} \\right)"
+      case ("matrix", rows) => matrixGen("b", rows)
+      case ("pmatrix", rows) => matrixGen("p", rows)
+      case ("bmatrix", rows) => matrixGen("b", rows)
+      case ("Bmatrix", rows) => matrixGen("B", rows)
+      case ("vmatrix", rows) => matrixGen("v", rows)
+      case ("Vmatrix", rows) => matrixGen("V", rows)
     }
   }
 }

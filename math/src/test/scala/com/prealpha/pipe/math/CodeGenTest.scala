@@ -157,11 +157,11 @@ class CodeGenTest extends FlatSpec with ShouldMatchers{
       Seq(Seq(Chunk("d")), Seq(Chunk("e")), Seq(Chunk("f"))),
       Seq(Seq(Chunk("g")), Seq(Chunk("h")), Seq(Chunk("i")))
     ))) should be {
-      "\\left( \\begin{array}{ccc}\n" +
+      "\\begin{bmatrix}\n" +
       "a & b & c \\\\\n" +
       "d & e & f \\\\\n" +
       "g & h & i\n" +
-      "\\end{array} \\right)"
+      "\\end{bmatrix}"
     }
 
     // TODO(TyOverby): More Tests
