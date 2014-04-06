@@ -106,6 +106,11 @@ object CodeGen {
       case ("limit", List(varx, bound)) => s"\\lim_{$varx \\to $bound}"
       case ("limit", _) => throw new ParseException("!limit(...) takes either 0, 1, or 2 arguments.", "", "")
 
+      case ("vector", List(contents)) => s"\\vec{$contents}"
+      case ("vec", List(contents)) => s"\\vec{$contents}"
+
+      case ("hat", List(contents)) => s"\\hat{$contents}"
+
       case ("floor", List(contents)) => s"\\left \\lfloor{$contents}\\right \\rfloor"
       case ("ceil", List(contents)) => s"\\left \\lceil{$contents}\\right \\rceil"
 

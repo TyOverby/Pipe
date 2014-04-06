@@ -24,7 +24,9 @@ class TableBlockTest extends FlatSpec with Matchers {
         |  : col 2 is      : centered      :    12 :
         |  : zebra stripes : are neat      :     1 :
       """.stripMargin.trim
-    compile(parse(markup)) should
+    val parsed = parse(markup)
+    val compiled = compile(parsed)
+    compiled should
       be(
         """
           |\begin{tabularx}{\linewidth}{lcr}
