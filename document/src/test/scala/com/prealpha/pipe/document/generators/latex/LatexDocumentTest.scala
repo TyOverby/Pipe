@@ -18,6 +18,17 @@ class LatexDocumentTest extends FlatSpec with Matchers {
     compile(input) should startWith("\\documentclass[a4paper]{article}\n\\usepackage{amsmath}")
   }
 
+  "a document with latex-import" should "import the packages correctly"  in {
+    val input = "|latex-import foo"
+    compile(input) should startWith("\\documentclass[a4paper]{article}\n\\usepackage{foo}")
+  }
+
+  it should "import multiple" in  {
+    val input = "|latex-import\n  foo\n  bar"
+    compile(input) should startWith("\\documentclass[a4paper]{article}\n\\usepackage{foo}\n\\usepackage{bar}")
+  }
+
+
   "funsies" should "be fun" in {
     /*-
     println(compile(

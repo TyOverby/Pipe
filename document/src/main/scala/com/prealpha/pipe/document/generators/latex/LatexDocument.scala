@@ -10,7 +10,7 @@ object LatexDocument {
       RawTextBlock :: BoldBlock :: ItalicBlock ::
       PreBlock :: LatexBlock :: EquationBlock ::
       DocumentBlock :: MathBlock :: TableBlock ::
-      LatexEnvBlock :: Nil
+      LatexEnvBlock :: LatexImportBlock :: Nil
 
   def compile(markup: String): String = {
     val parsed = InlineParser(BlocksParser.parse(markup)).get

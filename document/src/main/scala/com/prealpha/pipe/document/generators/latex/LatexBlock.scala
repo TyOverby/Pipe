@@ -50,3 +50,12 @@ object LatexEnvBlock extends BlockGenerator {
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean =
     block.instance == "latex-env"
 }
+
+object LatexImportBlock extends BlockGenerator {
+  override def captures(block: Block)(implicit ctx: CompileContext): Boolean =
+    block.instance == "latex-import"
+
+  override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
+    ("", ResultContext(block.childLines.map(_.trim).toSet ++ Set(block.argLine.trim)))
+  }
+}
