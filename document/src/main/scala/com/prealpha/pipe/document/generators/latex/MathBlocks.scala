@@ -12,7 +12,7 @@ object EquationBlock extends BlockGenerator {
   def processAlignOne(math: MathExpr, alignTo: MathExpr): MathExpr = math match {
     case x if x == alignTo => Align(x)
     case Paren(xs) => Paren(processAlign(xs, alignTo))
-    case Macro(n, o: Seq[_]) => Macro(n, o.map(a=>processAlign(a, alignTo)))
+    case Macro(n, o: Seq[_]) => Macro(n, o.map(a => processAlign(a, alignTo)))
     case SuperMacro(n, o: Seq[_]) => SuperMacro(n, o.map(_.map(a => processAlign(a, alignTo))))
     case a => a
   }
@@ -28,15 +28,26 @@ object EquationBlock extends BlockGenerator {
 
     sb ++= (if (numbered) "\\begin{align}" else "\\begin{align*}") ++= "\n"
 
+    // Parse the alignment out of the block argument
     val alignOn: MathExpr = if (args.isEmpty) Never else MathParser.tryParse(args(0)).getOrElse(Seq(Never))(0)
 
-    val alignedLines =
-      for {(rawLine, mathLineNum) <- block.childLines.zipWithIndex if rawLine.exists(!_.isWhitespace)
-          compLine = MathParser.tryParse(rawLine).get } yield {
-        (processAlign(compLine, alignOn), mathLineNum)
-      }
+    // group lines that are grouped together
+    val groupedLines =
+      block.childLines
+        .map(_.trim)
+        .filter(!_.isEmpty)
+        .zipWithIndex
+        .foldLeft(List[(String, Int)]()) {
+        case (first :: rest, line) if first._1.endsWith("\\") => (first._1.init + line._1, first._2) :: rest
+        case (list, line) => line :: list
+      }.reverse
+
+    // Parse and insert alignment into the equation
+    val alignedLines = for ((lineStr, lineNum) <- groupedLines) yield
+      (processAlign(MathParser.tryParse(lineStr).get, alignOn), lineNum)
+
     val compiledLines =
-      for ((line, mathLineNum)  <- alignedLines)
+      for ((line, mathLineNum) <- alignedLines)
       yield {
         try {
           CodeGen.genEntire(line)

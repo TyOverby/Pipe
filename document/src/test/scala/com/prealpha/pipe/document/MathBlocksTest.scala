@@ -45,4 +45,13 @@ class MathBlocksTest extends FlatSpec with Matchers {
     compile(parse(input)) should be("\\begin{align*}\na + b = c \\\\\nc = a + b\n\\end{align*}\n\\begin{align*}\na + b + c\n\\end{align*}")
   }
 
+  "an equation that is split between multiple lines" should "be joined correctly" in {
+    val input = "|equation\n  (a + b \\\n  + c)"
+    compile(parse(input)) should be("\\begin{align*}\n\\left( a + b + c \\right)\n\\end{align*}")
+  }
+
+  "an equation that is split over many lines" should "be joined correctly" in {
+    val input = "|equation\n  (a\\\n  +b\\\n  +c\\\n  +d\\\n  )"
+    compile(parse(input)) should be ("\\begin{align*}\n\\left( a + b + c + d \\right)\n\\end{align*}")
+  }
 }
