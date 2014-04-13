@@ -152,6 +152,14 @@ class GeneratorTest extends FlatSpec with Matchers {
     output should be("\\begin{itemize}\n\\item Foo\n\\begin{itemize}\n\\item Bar\n\\end{itemize}\n\\item Baz\n\\end{itemize}")
   }
 
+
+  it should "correctly nest lists" in {
+    val input = "|list\n  |list\n    |item\n      foo"
+    val parsed = parse(input)
+    val output = compile(parsed)
+    output should be("\\begin{itemize}\n\\begin{itemize}\n\\item\n\nfoo\n\\end{itemize}\n\\end{itemize}")
+  }
+
   "Bold and Italics with just an argument" should "produce a captured argument" in {
     val input = "|bold Hi\n|italic There"
     val parsed = parse(input)

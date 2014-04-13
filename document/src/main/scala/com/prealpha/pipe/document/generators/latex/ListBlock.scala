@@ -41,7 +41,15 @@ object ListBlock extends BlockGenerator {
 
     val lib = new ListItemBlock(ctx)
 
-    val results = block.childBlocks.map(b => lib.compile(b)(ctx.copy(generators = lib :: this :: Nil)))
+    val results = block.childBlocks.map(b => {
+      // If we're compiling another list, pass the parent context in
+      if (this.captures(b)) {
+        this.compile(b)(ctx)
+      } else {
+        // Otherwise, we pass in a context with limited generators
+        lib.compile(b)(ctx.copy(generators = lib :: this :: Nil))
+      }
+    })
     val merged = merge(results)
     sb.append(merged._1)
     sb.append("\n")

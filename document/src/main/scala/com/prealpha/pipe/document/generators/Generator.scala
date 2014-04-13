@@ -25,7 +25,8 @@ trait BlockGenerator {
   final def compile(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     val matching = ctx.generators.filter(_.captures(block)(ctx))
     if (matching.isEmpty) {
-      throw new BlockException(block, s"Trying to find a block Generator that matches ${block.toString} failed")
+      throw new BlockException(block, s"Trying to find a block Generator that matches ${block.toString} failed.  " +
+        s"\nAvailable generators are: ${ctx.generators.map(_.getClass.getSimpleName).mkString("[",", ","]")}")
     }
 
     if (matching.size > 1) {

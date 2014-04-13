@@ -124,7 +124,7 @@ object CodeGen {
     def matrixGen(ident: String, rows: Seq[Seq[String]]): String = {
       val flatRows = rows.map(_.mkString(" & "))
       val rowsStr = flatRows.mkString(" \\\\\n")
-      s"\\begin{${ident}matrix}\n" + rowsStr + s"\n\\end{${ident}matrix}"
+      s"\\begin{${ident}matrix}\n$rowsStr\n\\end{${ident}matrix}"
     }
 
     (m.name, m.c.map(_.map(genEntire))) match {

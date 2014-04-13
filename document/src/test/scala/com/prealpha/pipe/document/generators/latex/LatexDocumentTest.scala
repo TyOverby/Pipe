@@ -29,17 +29,6 @@ class LatexDocumentTest extends FlatSpec with Matchers {
   }
 
 
-  "funsies" should "be fun" in {
-    /*-
-    println(compile(
-      """
-        ||equation
-        |  (a + b) / c = (a)/(c) + (b)/(c)
-        |  x = :sin(:theta)
-     |""".stripMargin))
-     */
-  }
-
   "this long document" should "compile" in {
     compile(
       """
