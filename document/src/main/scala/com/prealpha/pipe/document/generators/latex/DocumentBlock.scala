@@ -18,6 +18,7 @@ object DocumentBlock extends BlockGenerator {
       case "title" :: title :: Nil => Some("\\title{" + title + "}")
       case "date" :: date :: Nil => Some("\\date{" + date + "}")
       case "margin" :: size :: Nil => Some(s"\\usepackage[$size]{geometry}")
+      case "indent" :: size :: Nil => Some(s"\\setlength\\parindent{$size}")
       case _ => None
     }).filter(_.isDefined).map(_.get)
 

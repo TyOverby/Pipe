@@ -6,7 +6,7 @@ import scala.io.Source
 
 object LatexDocument {
   def topLevel =
-    ListBlock :: SectionBlock :: SubsectionBlock ::
+    ListBlock :: SectionBlock ::
       RawTextBlock :: BoldBlock :: ItalicBlock ::
       PreBlock :: LatexBlock :: EquationBlock ::
       DocumentBlock :: MathBlock :: TableBlock ::
