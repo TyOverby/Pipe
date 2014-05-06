@@ -113,6 +113,22 @@ class GeneratorTest extends FlatSpec with Matchers {
     output should be("\\section*{}")
   }
 
+  "A subsection" should "compile" in {
+    val input = "|subsection"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be("\\subsection*{}")
+  }
+
+  "A subsubsection" should "compile" in {
+    val input = "|subsubsection"
+    val parsed = parse(input)
+    val output = compile(parsed)
+
+    output should be("\\subsubsection*{}")
+  }
+
   "A single named section" should "work" in {
     val input = "|section Foo Bar"
     val parsed = parse(input)
