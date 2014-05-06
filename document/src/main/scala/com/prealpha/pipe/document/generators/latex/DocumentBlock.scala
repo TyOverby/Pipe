@@ -12,15 +12,18 @@ object DocumentBlock extends BlockGenerator {
       .partition(_.contains("="))
 
     invalid.foreach(s => Console.err.println(s"Warning! $s is not a valid setting"))
-
-    val settings = valid.map(_.split("=").toList.map(_.trim)).map({
+    val individual = valid.map(_.split("=").toList.map(_.trim))
+    val settings = individual.map({
       case "author" :: name :: Nil => Some("\\author{" + name + "}")
       case "title" :: title :: Nil => Some("\\title{" + title + "}")
       case "date" :: date :: Nil => Some("\\date{" + date + "}")
-      case "margin" :: size :: Nil => Some(s"\\usepackage[$size]{geometry}")
       case "indent" :: size :: Nil => Some(s"\\setlength\\parindent{$size}")
       case _ => None
     }).filter(_.isDefined).map(_.get)
+    val imports = individual.map({
+      case "margin" :: size :: Nil => Some(s"\\usepackage[$size]{geometry}")
+      case _ => None
+    })
 
     val postBody = if (settings.isEmpty) List()
     else List("\\maketitle")

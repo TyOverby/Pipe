@@ -65,7 +65,7 @@ object EquationBlock extends BlockGenerator {
     sb ++= "\n"
     sb ++= (if (numbered) "\\end{align}" else "\\end{align*}")
 
-    (sb.toString(), ResultContext(Set("amsmath")))
+    (sb.toString(), ResultContext(Set("\\usepackage{amsmath}")))
   }
 }
 

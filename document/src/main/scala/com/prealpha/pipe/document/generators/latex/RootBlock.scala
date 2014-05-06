@@ -8,7 +8,6 @@ object RootBlock extends BlockGenerator {
     merge(block.childBlocks.map(compile))
   }
 
-
   def force(block: Block): String = {
     produce(block)(CompileContext(LatexDocument.topLevel))._1
   }

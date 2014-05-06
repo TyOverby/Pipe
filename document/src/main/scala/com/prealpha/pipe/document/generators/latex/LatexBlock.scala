@@ -56,6 +56,15 @@ object LatexImportBlock extends BlockGenerator {
     block.instance == "latex-import"
 
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
-    ("", ResultContext(block.childLines.map(_.trim).toSet ++ Set(block.argLine.trim)))
+    def wrapPackage(a: String): String = {
+        if (a startsWith "[") {
+          "\\usepackage" + a.trim
+        } else {
+          "\\usepackage{" + a.trim + "}"
+        }
+    }
+    val childLinesImports = block.childLines.map(wrapPackage).toSet;
+    val arglineImport = if (block.argLine.trim().length > 0) { Set(wrapPackage(block.argLine)) } else { Set() }
+    ("", ResultContext(childLinesImports ++ arglineImport))
   }
 }

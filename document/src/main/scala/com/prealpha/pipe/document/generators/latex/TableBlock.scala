@@ -51,7 +51,7 @@ object TableBlock extends BlockGenerator {
     }
 
     sb.append("\\end{tabularx}")
-    (sb.toString(), ResultContext(Set("tabularx")))
+    (sb.toString(), ResultContext(Set("\\usepackage{tabularx}")))
   }
 
   abstract sealed class ColumnAlignment(val char: Char)

@@ -25,9 +25,8 @@ object LatexDocument {
     val (output, result) = rb.produce(parsed)(CompileContext(topLevel))
 
     for (s <- result.imports) {
-      importsSb.append("\\usepackage{")
-        .append(s)
-        .append("}\n")
+      importsSb.append(s)
+        .append("\n")
     }
 
     for (s <- result.settings) {
@@ -37,6 +36,7 @@ object LatexDocument {
 
     for (s <- result.insideDoc) {
       insideBodySb.append(s)
+        .append("\n")
     }
 
     totalSb.append("\\documentclass[a4paper, 12pt]{article}\n")
