@@ -39,7 +39,7 @@ object LatexDocument {
       insideBodySb.append(s)
     }
 
-    totalSb.append("\\documentclass[a4paper]{article}\n")
+    totalSb.append("\\documentclass[a4paper, 12pt]{article}\n")
     totalSb.append(importsSb)
     totalSb.append(configSb)
 

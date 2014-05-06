@@ -10,22 +10,22 @@ class LatexDocumentTest extends FlatSpec with Matchers {
 
   "an empty document" should "provide only the very minimal" in {
     val input = ""
-    compile(input) should be("\\documentclass[a4paper]{article}\n\\begin{document}\n\n\\end{document}")
+    compile(input) should be("\\documentclass[a4paper, 12pt]{article}\n\\begin{document}\n\n\\end{document}")
   }
 
   "a document with math" should "require amsmath" in {
     val input = "|equation\n  a + b + c"
-    compile(input) should startWith("\\documentclass[a4paper]{article}\n\\usepackage{amsmath}")
+    compile(input) should startWith("\\documentclass[a4paper, 12pt]{article}\n\\usepackage{amsmath}")
   }
 
   "a document with latex-import" should "import the packages correctly"  in {
     val input = "|latex-import foo"
-    compile(input) should startWith("\\documentclass[a4paper]{article}\n\\usepackage{foo}")
+    compile(input) should startWith("\\documentclass[a4paper, 12pt]{article}\n\\usepackage{foo}")
   }
 
   it should "import multiple" in  {
     val input = "|latex-import\n  foo\n  bar"
-    compile(input) should startWith("\\documentclass[a4paper]{article}\n\\usepackage{foo}\n\\usepackage{bar}")
+    compile(input) should startWith("\\documentclass[a4paper, 12pt]{article}\n\\usepackage{foo}\n\\usepackage{bar}")
   }
 
 
@@ -78,7 +78,7 @@ class LatexDocumentTest extends FlatSpec with Matchers {
 
   "Document mode" should "parse and use the settings" in {
     val input = "|document\n  title = My Title\n  author = Ty Overby"
-    compile(input) should be("\\documentclass[a4paper]{article}\n\\title{My Title}\n\\author{Ty Overby}\n\\begin{document}\n\\maketitle\n\\end{document}")
+    compile(input) should be("\\documentclass[a4paper, 12pt]{article}\n\\title{My Title}\n\\author{Ty Overby}\n\\begin{document}\n\\maketitle\n\\end{document}")
   }
 
   "document" should "not warn on empty lines" in {
