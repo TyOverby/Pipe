@@ -79,7 +79,7 @@ object MathBlock extends BlockGenerator {
       isb.append("$")
         .append(CodeGen.genEntire(MathParser.tryParse(s).get))
         .append("$")
-      (isb.toString(), ResultContext(Set("amsmath")))
+      (isb.toString(), ResultContext(Set("\\usepackage{amsmath}")))
     }
 
     val argline = if (block.argLine.trim.length != 0)
