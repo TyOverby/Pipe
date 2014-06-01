@@ -21,7 +21,7 @@ object DocumentBlock extends BlockGenerator {
       case _ => None
     }).filter(_.isDefined).map(_.get)
     val imports = individual.map({
-      case "margin" :: size :: Nil => Some(s"\\usepackage[$size]{geometry}")
+      case "margin" :: size :: Nil => Some(s"\\usepackage[margin=$size]{geometry}")
       case _ => None
     })
 
