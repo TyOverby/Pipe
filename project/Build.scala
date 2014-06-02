@@ -5,7 +5,7 @@ import xerial.sbt.Pack._
 object Build extends sbt.Build {
 
     val commonSettings = Defaults.defaultSettings ++ Seq(
-        scalaVersion := "2.10.3",
+        scalaVersion := "2.11.1",
         version := "0.4.2"
     )
 
@@ -22,8 +22,9 @@ object Build extends sbt.Build {
         id = "math",
         base = file("math"),
         settings = commonSettings ++ Seq(
-            libraryDependencies += "org.xerial" % "xerial-core" % "3.2.1",
-            libraryDependencies += "org.scalatest" % "scalatest_2.10" % "latest.integration" % "test"
+            libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
+            libraryDependencies += "org.scalatest" % "scalatest_2.11" % "latest.integration" % "test",
+            libraryDependencies += "org.xerial" % "xerial-core" % "3.2.1"
         )
     )
 
@@ -31,8 +32,9 @@ object Build extends sbt.Build {
         id = "document",
         base = file("document"),
         settings = commonSettings ++ Seq(
-            libraryDependencies += "org.xerial" % "xerial-core" % "3.2.1",
-            libraryDependencies += "org.scalatest" % "scalatest_2.10" % "latest.integration" % "test"
+            libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
+            libraryDependencies += "org.scalatest" % "scalatest_2.11" % "latest.integration" % "test",
+            libraryDependencies += "org.xerial" % "xerial-core" % "3.2.1"
         )
-    ) dependsOn(math)
+    ).dependsOn(math)
 }
