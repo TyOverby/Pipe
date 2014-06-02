@@ -23,13 +23,13 @@ object DocumentBlock extends BlockGenerator {
     val imports = individual.map({
       case "margin" :: size :: Nil => Some(s"\\usepackage[margin=$size]{geometry}")
       case _ => None
-    })
+    }).filter(!_.isEmpty).map(_.get)
 
     val postBody = if (settings.isEmpty) List()
     else List("\\maketitle")
 
 
-    ("", ResultContext(Set(), settings.toSet, postBody.toSet))
+    ("", ResultContext(imports.toSet, settings.toSet, postBody.toSet))
   }
 
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean =
