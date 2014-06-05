@@ -115,4 +115,15 @@ class LatexDocumentTest extends FlatSpec with Matchers {
         |""".stripMargin.trim
     compile(markup)
   }
+
+  "multi-line math" should "work" in {
+    val markup =
+      """
+        ||math
+        |  :sin(
+        |    2 :times :theta
+        |  )
+      """.stripMargin.trim
+    compile(markup)
+  }
 }
