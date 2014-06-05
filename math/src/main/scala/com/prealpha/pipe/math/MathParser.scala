@@ -1,0 +1,73 @@
+package com.prealpha.pipe.math
+
+import scala.util.parsing.combinator.{PackratParsers, RegexParsers}
+import scala.util.Try
+import java.io.BufferedReader
+import scala.util.parsing.input.PagedSeqReader
+import scala.collection.immutable.PagedSeq
+
+object MathParser extends RegexParsers with PackratParsers {
+  override def skipWhitespace = true
+
+  def middle[L, R, Res](f: (L, R) => Res)(expr: ~[~[L, _], R]): Res = {
+    f(expr._1._1, expr._2)
+  }
+
+  def cons[A](expr: ~[A, List[A]]): List[A] = expr._1 :: expr._2
+
+  lazy val expr: PackratParser[MathExpr] =
+    comment | overDiv | sideDiv | superScript | subScript | atNotation |
+      paren | symbol | marco | superMarco |
+      (numericChunk | symbolicChunk | characterChunk)
+
+  // Used for the arguments to super and sub scripts.
+  lazy val scriptExpr: PackratParser[MathExpr] =
+    paren | symbol | marco | superMarco |
+      (numericChunk | symbolicChunk | characterChunk)
+
+  lazy val noCommaExpr: PackratParser[MathExpr] = expr.flatMap{
+    case Chunk(s) if s.contains(",") => failure("no commas allowed")
+    case a => success(a)
+  }
+
+  lazy val symbolicChunk: PackratParser[Chunk] = "[^()@!:#;/_\\ ^a-zA-Z0-9]+".r ^^ Chunk
+  lazy val characterChunk: PackratParser[Chunk] = "[a-zA-Z]+".r ^^ Chunk
+  lazy val numericChunk: PackratParser[Chunk] = "-?[0-9.]+".r ^^ Chunk
+
+  lazy val symbol: PackratParser[Symbol] = ":" ~> "[a-zA-Z]+".r ^^ Symbol
+
+  lazy val comment: PackratParser[Comment] = "#" ~> "[^\\n]*".r <~ "$".r ^^ Comment
+
+  lazy val paren: PackratParser[Paren] = "(" ~> expr.* <~ ")" ^^ Paren
+
+  lazy val commaSep: PackratParser[Seq[Seq[MathExpr]]] = noCommaExpr.* ~ ("," ~> noCommaExpr.*).* ^^ cons
+
+  lazy val marco: PackratParser[Macro] = "!" ~> "[a-zA-Z]+".r ~ "(" ~ commaSep <~ ")" ^^ middle(Macro)
+
+  lazy val semiSep: PackratParser[Seq[Seq[Seq[MathExpr]]]] = commaSep ~ (";" ~> commaSep).* ^^ cons
+
+  lazy val superMarco: PackratParser[SuperMacro] = "!" ~> "[a-zA-Z]+".r ~ "(" ~ semiSep <~ ")" ^^ middle(SuperMacro)
+
+  lazy val superScript: PackratParser[SuperScript] = expr ~ "^" ~ scriptExpr ^^ middle(SuperScript)
+
+  lazy val subScript: PackratParser[SubScript] = expr ~ "_" ~ scriptExpr ^^ middle(SubScript)
+
+  lazy val atNotation: PackratParser[Macro] = expr ~ "@" ~ characterChunk ^^ middle((a, b) => Macro(b.contents, Seq(Seq(a))))
+
+  lazy val overDiv: PackratParser[OverDiv] = expr ~ "/" ~ expr ^^ middle(OverDiv)
+
+  lazy val sideDiv: PackratParser[SideDiv] = expr ~ "//" ~ expr ^^ middle(SideDiv)
+
+  def tryParse(input: String): Try[Seq[MathExpr]] = {
+    val psr = new PagedSeqReader(PagedSeq.fromStrings(List(input)))
+    val pr = new PackratReader(psr)
+    if (input.forall(_.isWhitespace)) {
+      scala.util.Failure(new ParseException("", input, ""))
+    } else {
+      parse(phrase(expr.+), pr) match {
+        case Success(result, next) => scala.util.Success(result)
+        case NoSuccess(msg, next) => scala.util.Failure(new ParseException(msg, input, next))
+      }
+    }
+  }
+}
