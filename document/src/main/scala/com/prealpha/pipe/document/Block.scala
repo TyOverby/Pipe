@@ -3,10 +3,10 @@ package com.prealpha.pipe.document
 import java.util
 import scala.collection.JavaConversions.collectionAsScalaIterable
 
-case class Block(instance: String, argLine: String, level: Int, lineNum: Int,
-                 childLines: List[String], childBlocks: List[Block])
+private[document] case class Block(instance: String, argLine: String, level: Int, lineNum: Int,
+                                   childLines: List[String], childBlocks: List[Block])
 
-class BlockBuilder(val instance: String, val argLine: String, val level: Int, val lineNum: Int) {
+private[document] class BlockBuilder(val instance: String, val argLine: String, val level: Int, val lineNum: Int) {
   val lines = new java.util.ArrayList[String]
   var lst = new util.ArrayList[BlockBuilder]()
 

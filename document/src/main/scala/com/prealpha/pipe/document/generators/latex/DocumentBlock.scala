@@ -3,7 +3,7 @@ package com.prealpha.pipe.document.generators.latex
 import com.prealpha.pipe.document.Block
 import com.prealpha.pipe.document.generators._
 
-object DocumentBlock extends BlockGenerator {
+private[latex] object DocumentBlock extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     val lines = block.childLines
 

@@ -3,7 +3,7 @@ package com.prealpha.pipe.document.generators.latex
 import com.prealpha.pipe.document.Block
 import com.prealpha.pipe.document.generators._
 
-object RawTextBlock extends BlockGenerator {
+private[latex] object RawTextBlock extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     val strippedLines = block.childLines.map(_.dropWhile(_.isWhitespace))
       .filter(_.length > 0)

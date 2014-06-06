@@ -1,20 +1,11 @@
 package com.prealpha.pipe.document.generators.latex
 
-import com.prealpha.pipe.document.{BlocksParser, Block}
+import com.prealpha.pipe.document.{BlockParser, Block}
 import org.scalatest._
 
 class TableBlockTest extends FlatSpec with Matchers {
-  def compile(b: Block): String = {
-    val rb = RootBlock
-    rb.force(b)
-  }
-
-  def parse(s: String): Block = {
-    BlocksParser.parse(s)
-  }
-
   "TableBlock" should "parse the table from the Google Doc" in {
-    val markup =
+    val input =
       """
         ||table
         |  : ------------- : +-----------+ : ----+ :
@@ -24,9 +15,7 @@ class TableBlockTest extends FlatSpec with Matchers {
         |  : col 2 is      : centered      :    12 :
         |  : zebra stripes : are neat      :     1 :
       """.stripMargin.trim
-    val parsed = parse(markup)
-    val compiled = compile(parsed)
-    compiled should
+    LatexCompiler.compileFragment(input) should
       be(
         """
           |\begin{tabularx}{\linewidth}{lcr}
@@ -41,7 +30,7 @@ class TableBlockTest extends FlatSpec with Matchers {
   }
 
   it should "parse this" in {
-    val markup1 =
+    val input1 =
       """
         |$A$ can be transformed to $B$ by subtracting two times the first column from the second.
         |
@@ -58,9 +47,9 @@ class TableBlockTest extends FlatSpec with Matchers {
         |  : $!matrix(1, 0, 0; 0, 1, 0; 0, 0, 1)$     : Add three times the third row to the first.  :
         |
       """.stripMargin.trim
-    compile(parse(markup1))
+    LatexCompiler.compileFragment(input1)
 
-    val markup2 =
+    val input2 =
       """
         |$A$ can be transformed to $B$ by subtracting two times the first column from the second.
         |
@@ -82,6 +71,6 @@ class TableBlockTest extends FlatSpec with Matchers {
         |  | ---------------------------------------- | -------------------------------------------- |
         |
       """.stripMargin.trim
-    compile(parse(markup2))
+    LatexCompiler.compileFragment(input2)
   }
 }

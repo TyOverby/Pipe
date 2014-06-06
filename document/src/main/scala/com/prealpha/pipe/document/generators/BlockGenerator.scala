@@ -2,11 +2,12 @@ package com.prealpha.pipe.document.generators
 
 import com.prealpha.pipe.document.Block
 
-case class CompileContext(generators: List[BlockGenerator],
-                          settings: Map[Class[_], Map[String, String]] = Map())
+private[generators] case class CompileContext(generators: List[BlockGenerator],
+                                              settings: Map[Class[_], Map[String, String]] = Map())
 
 
-case class ResultContext(imports: Set[String] = Set(), settings: Set[String] = Set(), insideDoc: Set[String] = Set()) {
+private[generators] case class ResultContext(imports: Set[String] = Set(),
+                                             settings: Set[String] = Set(),insideDoc: Set[String] = Set()) {
   def ++(other: ResultContext): ResultContext = {
     ResultContext(
       this.imports ++ other.imports,
@@ -15,9 +16,9 @@ case class ResultContext(imports: Set[String] = Set(), settings: Set[String] = S
   }
 }
 
-object EmptyResultContext extends ResultContext(Set(), Set(), Set())
+private[generators] object EmptyResultContext extends ResultContext(Set(), Set(), Set())
 
-trait BlockGenerator {
+private[generators] trait BlockGenerator {
   def captures(block: Block)(implicit ctx: CompileContext): Boolean
 
   def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext)
@@ -50,4 +51,3 @@ trait BlockGenerator {
     (strMerge, resultMerge)
   }
 }
-

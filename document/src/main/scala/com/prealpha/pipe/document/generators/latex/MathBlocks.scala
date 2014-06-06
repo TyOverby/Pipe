@@ -5,7 +5,7 @@ import com.prealpha.pipe.document.generators._
 import com.prealpha.pipe.math._
 import scala.util.{Failure, Success}
 
-object EquationBlock extends BlockGenerator {
+private[latex] object EquationBlock extends BlockGenerator {
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean =
     block.instance == "equation"
 
@@ -30,7 +30,7 @@ object EquationBlock extends BlockGenerator {
   }
 }
 
-object MathBlock extends BlockGenerator {
+private[latex] object MathBlock extends BlockGenerator {
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean =
     block.instance == "math"
 

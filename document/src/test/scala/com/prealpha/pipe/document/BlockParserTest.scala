@@ -1,9 +1,8 @@
-package com.prealpha.pipe.document.generators.latex
+package com.prealpha.pipe.document
 
-import com.prealpha.pipe.document.{BlocksParser, Block}
 import org.scalatest._
 
-class BlocksParserTest extends FlatSpec with Matchers {
+class BlockParserTest extends FlatSpec with Matchers {
   def genTextBlockList(text: List[String], args: String = "",
                        level: Int = 0, lineNum: Int, children: List[Block] = List()) =
     genPipeBlock("_text", args, level, lineNum, text, children)
@@ -17,7 +16,7 @@ class BlocksParserTest extends FlatSpec with Matchers {
     Block(instance, args, level, lineNum, childLines, children)
 
   def parse(s: String): List[Block] = {
-    BlocksParser.parse(s).childBlocks
+    BlockParser.parse(s).childBlocks
   }
 
   def assertEqual(should: Block, actual: Block) {

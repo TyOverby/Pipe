@@ -1,11 +1,11 @@
 package com.prealpha.pipe.document.generators.latex
 
-import com.prealpha.pipe.document.generators.CompileContext
-import com.prealpha.pipe.document.{BlocksParser, InlineParser}
+import com.prealpha.pipe.document.generators.{ResultContext, BlockGenerator, CompileContext}
+import com.prealpha.pipe.document.{Block, BlockParser, InlineParser}
 import scala.io.Source
 
-object LatexDocument {
-  def topLevel =
+object LatexCompiler {
+  private def topLevel =
     ListBlock :: SectionBlock ::
       RawTextBlock :: BoldBlock :: ItalicBlock ::
       PreBlock :: LatexBlock :: EquationBlock ::
@@ -13,7 +13,7 @@ object LatexDocument {
       LatexEnvBlock :: LatexImportBlock :: Nil
 
   def compile(markup: String): String = {
-    val parsed = InlineParser(BlocksParser.parse(markup)).get
+    val parsed = InlineParser(BlockParser.parse(markup)).get
 
     val totalSb = new StringBuilder
 
@@ -53,4 +53,17 @@ object LatexDocument {
 
     totalSb.toString()
   }
+
+  private[latex] def compileFragment(markup: String): String = {
+    val parsed = InlineParser(BlockParser.parse(markup)).get
+    RootBlock.produce(parsed)(CompileContext(topLevel))._1
+  }
+}
+
+private object RootBlock extends BlockGenerator {
+  override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
+    merge(block.childBlocks.map(compile))
+  }
+
+  override def captures(block: Block)(implicit ctx: CompileContext): Boolean = false
 }

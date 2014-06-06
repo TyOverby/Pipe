@@ -1,6 +1,6 @@
 package com.prealpha.pipe.document
 
-import com.prealpha.pipe.document.generators.latex.LatexDocument
+import com.prealpha.pipe.document.generators.latex.LatexCompiler
 import scala.io.Source
 import java.io.PrintWriter
 
@@ -32,7 +32,6 @@ object EntryPoint {
       |     vulcan -
       |     vulcan
     """.stripMargin
-
 
   def main(args: Array[String]) {
     type OptMap = Map[String, String]
@@ -71,7 +70,7 @@ object EntryPoint {
         Source.fromInputStream(System.in)
       }).getLines().mkString("\n")
 
-    val compiled = LatexDocument.compile(input)
+    val compiled = LatexCompiler.compile(input)
 
     if (options.contains("output")) {
       val file = options.get("output").get

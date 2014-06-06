@@ -3,8 +3,7 @@ package com.prealpha.pipe.document
 import java.util
 import scala.collection.JavaConversions.collectionAsScalaIterable
 
-object BlocksParser {
-
+private[document] object BlockParser {
   def parse(chunk: String): Block = {
     val root = new BlockBuilder("_root", "", -1, 0)
 
@@ -31,7 +30,7 @@ object BlocksParser {
 
     for ((line, lineNum_) <- chunk.split("\n").zipWithIndex) {
       // Lines in a text file are 1 based
-      val lineNum = lineNum_ + 1;
+      val lineNum = lineNum_ + 1
       val trimmed = line.trim
 
       val bb =

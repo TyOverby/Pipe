@@ -3,7 +3,7 @@ package com.prealpha.pipe.document.generators.latex
 import com.prealpha.pipe.document.Block
 import com.prealpha.pipe.document.generators._
 
-abstract class FontBlock extends BlockGenerator {
+private abstract class FontBlock extends BlockGenerator {
   def fullName: String
 
   def envName: String
@@ -25,13 +25,12 @@ abstract class FontBlock extends BlockGenerator {
     block.instance == fullName
 }
 
-object ItalicBlock extends FontBlock {
-  def fullName = "italic"
-  def envName = "textit"
+private[latex] object ItalicBlock extends FontBlock {
+  override def fullName = "italic"
+  override def envName = "textit"
 }
 
-object BoldBlock extends FontBlock {
-  def fullName = "bold"
-  def envName = "textbf"
+private[latex] object BoldBlock extends FontBlock {
+  override def fullName = "bold"
+  override def envName = "textbf"
 }
-

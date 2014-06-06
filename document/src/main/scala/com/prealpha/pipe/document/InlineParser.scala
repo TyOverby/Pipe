@@ -4,7 +4,7 @@ import com.prealpha.pipe.math.{MathCompiler, ParseException}
 import scala.util.Try
 import scala.util.parsing.combinator.RegexParsers
 
-object InlineParser extends RegexParsers {
+private[document] object InlineParser extends RegexParsers {
   def apply(input: String): Try[String] = {
     if (input == "")
       scala.util.Success("")

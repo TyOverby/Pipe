@@ -3,7 +3,7 @@ package com.prealpha.pipe.document.generators.latex
 import com.prealpha.pipe.document.Block
 import com.prealpha.pipe.document.generators._
 
-object LatexBlock extends BlockGenerator {
+private[latex] object LatexBlock extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     val sb = new StringBuilder
 
@@ -22,7 +22,7 @@ object LatexBlock extends BlockGenerator {
     block.instance == "latex"
 }
 
-object LatexEnvBlock extends BlockGenerator {
+private[latex] object LatexEnvBlock extends BlockGenerator {
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
     val sb = new StringBuilder
     val lines = block.childLines
@@ -51,7 +51,7 @@ object LatexEnvBlock extends BlockGenerator {
     block.instance == "latex-env"
 }
 
-object LatexImportBlock extends BlockGenerator {
+private[latex] object LatexImportBlock extends BlockGenerator {
   override def captures(block: Block)(implicit ctx: CompileContext): Boolean =
     block.instance == "latex-import"
 
@@ -63,7 +63,7 @@ object LatexImportBlock extends BlockGenerator {
           "\\usepackage{" + a.trim + "}"
         }
     }
-    val childLinesImports = block.childLines.map(wrapPackage).toSet;
+    val childLinesImports = block.childLines.map(wrapPackage).toSet
     val arglineImport = if (block.argLine.trim().length > 0) { Set(wrapPackage(block.argLine)) } else { Set() }
     ("", ResultContext(childLinesImports ++ arglineImport))
   }

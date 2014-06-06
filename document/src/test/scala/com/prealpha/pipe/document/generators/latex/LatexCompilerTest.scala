@@ -3,34 +3,34 @@ package com.prealpha.pipe.document.generators.latex
 import org.scalatest._
 import java.io.ByteArrayOutputStream
 
-class LatexDocumentTest extends FlatSpec with Matchers {
-  def compile(s: String): String = {
-    LatexDocument.compile(s)
-  }
-
+class LatexCompilerTest extends FlatSpec with Matchers {
   "an empty document" should "provide only the very minimal" in {
     val input = ""
-    compile(input) should be("\\documentclass[a4paper, 12pt]{article}\n\\begin{document}\n\n\\end{document}")
+    LatexCompiler.compile(input) should
+      be("\\documentclass[a4paper, 12pt]{article}\n\\begin{document}\n\n\\end{document}")
   }
 
   "a document with math" should "require amsmath" in {
     val input = "|equation\n  a + b + c"
-    compile(input) should startWith("\\documentclass[a4paper, 12pt]{article}\n\\usepackage{amsmath}")
+    LatexCompiler.compile(input) should
+      startWith("\\documentclass[a4paper, 12pt]{article}\n\\usepackage{amsmath}")
   }
 
   "a document with latex-import" should "import the packages correctly"  in {
     val input = "|latex-import foo"
-    compile(input) should startWith("\\documentclass[a4paper, 12pt]{article}\n\\usepackage{foo}")
+    LatexCompiler.compile(input) should
+      startWith("\\documentclass[a4paper, 12pt]{article}\n\\usepackage{foo}")
   }
 
   it should "import multiple" in  {
     val input = "|latex-import\n  foo\n  bar"
-    compile(input) should startWith("\\documentclass[a4paper, 12pt]{article}\n\\usepackage{foo}\n\\usepackage{bar}")
+    LatexCompiler.compile(input) should
+      startWith("\\documentclass[a4paper, 12pt]{article}\n\\usepackage{foo}\n\\usepackage{bar}")
   }
 
 
   "this long document" should "compile" in {
-    compile(
+    LatexCompiler.compile(
       """
         ||section Meyer Kizner
         ||section CIS 121 Homework 3
@@ -78,7 +78,8 @@ class LatexDocumentTest extends FlatSpec with Matchers {
 
   "Document mode" should "parse and use the settings" in {
     val input = "|document\n  title = My Title\n  author = Ty Overby"
-    compile(input) should be("\\documentclass[a4paper, 12pt]{article}\n\\title{My Title}\n\\author{Ty Overby}\n\\begin{document}\n\\maketitle\n\n\\end{document}")
+    LatexCompiler.compile(input) should
+      be("\\documentclass[a4paper, 12pt]{article}\n\\title{My Title}\n\\author{Ty Overby}\n\\begin{document}\n\\maketitle\n\n\\end{document}")
   }
 
   "document" should "not warn on empty lines" in {
@@ -86,13 +87,13 @@ class LatexDocumentTest extends FlatSpec with Matchers {
     val baos = new ByteArrayOutputStream
     Console.withErr(baos) {
       val input = "|document\n  title = Foo\n\n|section Foo"
-      compile(input)
+      LatexCompiler.compile(input)
       baos.toString should be ("")
     }
   }
 
   "matrices" should "work" in {
-    val markup =
+    val input =
       """
         ||document
         |    title = Some equations
@@ -113,17 +114,17 @@ class LatexDocumentTest extends FlatSpec with Matchers {
         |  ) !matrix(x_1; x_2; x_3) = !matrix(0; 0; 0)
         |
         |""".stripMargin.trim
-    compile(markup)
+    LatexCompiler.compile(input)
   }
 
   "multi-line math" should "work" in {
-    val markup =
+    val input =
       """
         ||math
         |  :sin( \
         |    2 :times :theta \
         |  )
       """.stripMargin.trim
-    compile(markup)
+    LatexCompiler.compile(input)
   }
 }
