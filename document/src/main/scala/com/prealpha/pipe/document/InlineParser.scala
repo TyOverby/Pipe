@@ -42,7 +42,7 @@ object InlineParser extends RegexParsers {
       case Error(msg, next) => Error(msg, next)
       case Failure(msg, next) => Failure(msg, next)
       // TODO: the type annotation is only for IntelliJ
-      case Success(result: String, next) => MathParser.tryParse(result).map(CodeGen.genEntire) match {
+      case Success(result: String, next) => MathParser.parse(result).map(CodeGen.genEntire) match {
         case scala.util.Success(latex) => Success("$" + latex + "$", next)
         case scala.util.Failure(exception) => Failure(exception.getMessage, next)
       }
