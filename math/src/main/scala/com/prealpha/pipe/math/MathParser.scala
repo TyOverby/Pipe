@@ -2,11 +2,10 @@ package com.prealpha.pipe.math
 
 import scala.util.parsing.combinator.{PackratParsers, RegexParsers}
 import scala.util.Try
-import java.io.BufferedReader
 import scala.util.parsing.input.PagedSeqReader
 import scala.collection.immutable.PagedSeq
 
-object MathParser extends RegexParsers with PackratParsers {
+private[math] object MathParser extends RegexParsers with PackratParsers {
   def middle[L, R, Res](f: (L, R) => Res)(expr: ~[~[L, _], R]): Res = {
     f(expr._1._1, expr._2)
   }

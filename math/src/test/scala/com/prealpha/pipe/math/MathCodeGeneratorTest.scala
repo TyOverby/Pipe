@@ -3,8 +3,8 @@ package com.prealpha.pipe.math
 import org.scalatest._
 import com.prealpha.pipe.math
 
-class CodeGenTest extends FlatSpec with ShouldMatchers{
-  def compile(expr: MathExpr*): String = CodeGen.genEntire(expr)
+class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
+  def compile(expr: MathExpr*): String = MathCodeGenerator.genEntire(expr)
 
   "symbols" should "be translated literally to their LaTeX forms" in {
     // :foo

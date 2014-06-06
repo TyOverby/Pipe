@@ -1,13 +1,13 @@
 package com.prealpha.pipe.math
 
-
-object CodeGen {
+private[math] object MathCodeGenerator {
   def genEntire(exprs: Seq[MathExpr]): String = {
     val sb = new StringBuilder
     genMulti(exprs)(sb)
     sb.toString()
   }
-  def genMulti(exprs: Seq[MathExpr])(implicit builder: StringBuilder) {
+
+  private def genMulti(exprs: Seq[MathExpr])(implicit builder: StringBuilder) {
     if (exprs.isEmpty) {
       return
     }
@@ -22,7 +22,7 @@ object CodeGen {
     genSingle(exprs.last)
   }
 
-  def genSingle(expr: MathExpr)(implicit sb: StringBuilder) {
+  private def genSingle(expr: MathExpr)(implicit sb: StringBuilder) {
     expr match {
       case Chunk(s) => sb ++= s
       case Symbol(s) => sb ++= "\\" ++= s
@@ -91,7 +91,7 @@ object CodeGen {
     }
   }
 
-  def genMacro(m: Macro): String = {
+  private def genMacro(m: Macro): String = {
     val easyMap = Map("sum" -> "sum", "prod" -> "prod",
       "product" -> "prod",
       "integral" -> "int", "int" -> "int")
@@ -125,7 +125,7 @@ object CodeGen {
     }
   }
 
-  def genSuperMacro(m: SuperMacro): String = {
+  private def genSuperMacro(m: SuperMacro): String = {
     def matrixGen(ident: String, rows: Seq[Seq[String]]): String = {
       val flatRows = rows.map(_.mkString(" & "))
       val rowsStr = flatRows.mkString(" \\\\\n")

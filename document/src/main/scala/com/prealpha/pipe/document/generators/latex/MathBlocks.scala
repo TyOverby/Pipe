@@ -18,17 +18,10 @@ object EquationBlock extends BlockGenerator {
     sb ++= (if (numbered) "\\begin{align}" else "\\begin{align*}") ++= "\n"
 
     // parse the alignment out of the block argument
-    val alignOn: Option[MathExpr] =
-      if (args.isEmpty)
-        None
-      else
-        MathParser.parse(args(0)) match {
-          case Success(result) => Some(result(0))
-          case Failure(exception) => None
-        }
+    val alignToken: Option[String] = if (args.isEmpty) None else Some(args(0))
 
     val content = block.childLines.mkString("\n")
-    sb.append(CodeGen.genEntire(MathParser.parse(content, alignOn).get))
+    sb.append(MathCompiler.compile(content, alignToken).get)
 
     sb ++= "\n"
     sb ++= (if (numbered) "\\end{align}" else "\\end{align*}")
@@ -45,7 +38,7 @@ object MathBlock extends BlockGenerator {
     def parseInline(s: String): (String, ResultContext) = {
       val isb = new StringBuilder
       isb.append("$")
-        .append(CodeGen.genEntire(MathParser.parse(s).get))
+        .append(MathCompiler.compile(s).get)
         .append("$")
       (isb.toString(), ResultContext(Set("\\usepackage{amsmath}")))
     }
