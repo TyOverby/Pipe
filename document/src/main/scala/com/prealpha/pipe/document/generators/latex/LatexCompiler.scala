@@ -12,6 +12,15 @@ object LatexCompiler {
       DocumentBlock :: MathBlock :: TableBlock ::
       LatexEnvBlock :: LatexImportBlock :: Nil
 
+  /** Attempts to compile `markup` into TeX. The markup is interpreted as comprising a complete TeX document, and the
+    * TeX header and footer boilerplate will be added to the output to reflect this.
+    *
+    * Various exceptions may be thrown if compilation is unsuccessful.
+    *
+    * @param markup the markup to compile
+    * @return a compiled TeX string corresponding to `markup`
+    */
+  /* TODO: figure out what exceptions this throws (and should throw) */
   def compile(markup: String): String = {
     val parsed = InlineParser(BlockParser.parse(markup)).get
 
