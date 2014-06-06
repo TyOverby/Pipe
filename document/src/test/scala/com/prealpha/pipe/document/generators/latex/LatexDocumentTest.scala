@@ -106,10 +106,10 @@ class LatexDocumentTest extends FlatSpec with Matchers {
         |  y = :sin^(-1)(:theta)
         |
         ||equation
-        |  !matrix(
-        |    3, -4, 0;
-        |    4, -2, 0;
-        |    -1, 0, 3
+        |  !matrix( \
+        |    3, -4, 0; \
+        |    4, -2, 0; \
+        |    -1, 0, 3 \
         |  ) !matrix(x_1; x_2; x_3) = !matrix(0; 0; 0)
         |
         |""".stripMargin.trim
@@ -120,8 +120,8 @@ class LatexDocumentTest extends FlatSpec with Matchers {
     val markup =
       """
         ||math
-        |  :sin(
-        |    2 :times :theta
+        |  :sin( \
+        |    2 :times :theta \
         |  )
       """.stripMargin.trim
     compile(markup)
