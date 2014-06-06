@@ -95,7 +95,11 @@ private[math] object MathCodeGenerator {
     val easyMap = Map("sum" -> "sum", "prod" -> "prod",
       "product" -> "prod",
       "integral" -> "int", "int" -> "int")
-    val actuallySuper = Set("cases", "matrix")
+
+    def isActuallySuper(name: String): Boolean = {
+        val superNames = Set("cases", "matrix")
+        superNames.contains(name) || name.endsWith("matrix")
+    }
 
     (m.name, m.c.map(genEntire)) match {
       case ("sqrt", List(contents)) => s"\\sqrt{$contents}"
@@ -119,7 +123,7 @@ private[math] object MathCodeGenerator {
       case ("floor", List(contents)) => s"\\left \\lfloor{$contents}\\right \\rfloor"
       case ("ceil", List(contents)) => s"\\left \\lceil{$contents}\\right \\rceil"
 
-      case (name, _) if actuallySuper.contains(name) => genSuperMacro(SuperMacro(name, Seq(m.c)))
+      case (name, _) if isActuallySuper(name) => genSuperMacro(SuperMacro(name, Seq(m.c)))
 
       case _ => throw new ParseException(s"No pattern found for macro ${m.name}", "", "")
     }
