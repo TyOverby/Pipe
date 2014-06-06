@@ -11,10 +11,13 @@ object CodeGen {
     if (exprs.isEmpty) {
       return
     }
-    exprs.init.foreach(e => {
-      genSingle(e)
-      builder.append(" ")
-    })
+    exprs.init.foreach {
+      case Newline =>
+        genSingle(Newline)
+      case e =>
+        genSingle(e)
+        builder.append(" ")
+    }
 
     genSingle(exprs.last)
   }
@@ -83,6 +86,8 @@ object CodeGen {
         genSingle(numer)
         sb ++= " / "
         genSingle(denom)
+      case Newline =>
+        sb ++= "\\\\\n"
     }
   }
 

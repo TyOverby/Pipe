@@ -5,7 +5,7 @@ import scala.util.Try
 
 object Math {
   def compile(source: String): Try[String] =
-    MathParser.tryParse(source).map(CodeGen.genEntire)
+    MathParser.parse(source).map(CodeGen.genEntire)
 
   def forceCompile(source: String): String =
     compile(source).get

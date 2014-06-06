@@ -13,7 +13,4 @@ case class OverDiv(numer: MathExpr, denom: MathExpr) extends MathExpr
 case class SideDiv(numer: MathExpr, denom: MathExpr) extends MathExpr
 case class Align(nextTo: MathExpr) extends MathExpr
 case class Comment(text: String) extends MathExpr
-// This will never occur as the result of a math parse
-case object Never extends MathExpr
-
-
+case object Newline extends MathExpr

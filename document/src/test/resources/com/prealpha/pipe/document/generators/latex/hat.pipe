@@ -1,0 +1,8 @@
+|raw
+  object EntryPoint extends App {
+    println("Hello PennApps")
+  }
+|latex
+  $\hat{\delta}(q_0, wa) = q_1$ \\
+  $\hat{\delta}(q_0, wb) = q_2$
+

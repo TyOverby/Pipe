@@ -90,4 +90,40 @@ class LatexDocumentTest extends FlatSpec with Matchers {
       baos.toString should be ("")
     }
   }
+
+  "matrices" should "work" in {
+    val markup =
+      """
+        ||document
+        |    title = Some equations
+        |    author = Ty Overby, Meyer Kizner
+        |
+        ||equation
+        |  a = b
+        |  x = :sin(:theta)
+        ||equation =
+        |  x = :sin(:theta)
+        |  y = :sin^(-1)(:theta)
+        |
+        ||equation
+        |  !matrix( \
+        |    3, -4, 0; \
+        |    4, -2, 0; \
+        |    -1, 0, 3 \
+        |  ) !matrix(x_1; x_2; x_3) = !matrix(0; 0; 0)
+        |
+        |""".stripMargin.trim
+    compile(markup)
+  }
+
+  "multi-line math" should "work" in {
+    val markup =
+      """
+        ||math
+        |  :sin( \
+        |    2 :times :theta \
+        |  )
+      """.stripMargin.trim
+    compile(markup)
+  }
 }
