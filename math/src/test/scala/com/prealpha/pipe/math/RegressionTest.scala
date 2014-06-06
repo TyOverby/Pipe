@@ -5,6 +5,7 @@ import org.scalatest.{Matchers, FlatSpec}
 
 class RegressionTest extends FlatSpec with Matchers {
   def parse(s: String): Seq[MathExpr] = MathParser.parse(s).get
+  def compile(s: String): String = MathCompiler.compile(s).get
 
   def parse1(s: String): MathExpr = {
     val parsed = MathParser.parse(s).get
@@ -29,5 +30,10 @@ class RegressionTest extends FlatSpec with Matchers {
   "commas outside of a well formatted section" should "throw errors" in {
     val input = "!sqrt((a + b)) / (123, 456)"
     val parsed = parse1(input)
+  }
+  "matrix variants" should "not break" in {
+    compile("!bmatrix(1,2)")
+    compile("!Bmatrix(1,2)")
+    compile("!pmatrix(1,2)")
   }
 }
