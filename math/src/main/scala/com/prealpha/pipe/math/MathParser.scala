@@ -57,19 +57,16 @@ private[math] object MathParser extends RegexParsers with PackratParsers {
 
   def parse(input: String, alignOn: Option[MathExpr] = None): Try[Seq[MathExpr]] = {
     val rawLines = input.trim.split("\n")
-    joinLines(rawLines) match {
-      case scala.util.Success(joinedLines) =>
-        val lineTries = joinedLines.map(parseLine(_, alignOn))
-        if (lineTries.forall(_.isSuccess)) {
-          val lineResults = lineTries.map(_.get)
-          val resultsWithNewlines = lineResults.map(Newline +: _)
-          val joinedResult = (List[MathExpr]() /: resultsWithNewlines)(_ ++ _)
-          scala.util.Success(joinedResult.drop(1))
-        } else {
-          lineTries.dropWhile(_.isSuccess).head
-        }
-      case scala.util.Failure(exception) =>
-        scala.util.Failure(exception)
+    joinLines(rawLines).flatMap { joinedLines =>
+      val lineTries = joinedLines.map(parseLine(_, alignOn))
+      if (lineTries.forall(_.isSuccess)) {
+        val lineResults = lineTries.map(_.get)
+        val resultsWithNewlines = lineResults.map(Newline +: _)
+        val joinedResult = (List[MathExpr]() /: resultsWithNewlines)(_ ++ _)
+        scala.util.Success(joinedResult.drop(1))
+      } else {
+        lineTries.dropWhile(_.isSuccess).head
+      }
     }
   }
 
@@ -78,10 +75,7 @@ private[math] object MathParser extends RegexParsers with PackratParsers {
       if (first.endsWith("\\"))
         joinLines((first.dropRight(1) + second) +: tail)
       else
-        joinLines(second +: tail) match {
-          case scala.util.Success(result) => scala.util.Success(first +: result)
-          case scala.util.Failure(exception) => scala.util.Failure(exception)
-        }
+        joinLines(second +: tail).map(first +: _)
     case Seq(head) =>
       if (head.endsWith("\\"))
         scala.util.Failure(new ParseException("no succeeding line to join to", head, ""))
