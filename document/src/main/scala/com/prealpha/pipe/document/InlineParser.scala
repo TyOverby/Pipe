@@ -5,7 +5,7 @@ import scala.util.Try
 import scala.util.parsing.combinator.RegexParsers
 
 private[document] object InlineParser extends RegexParsers {
-  def apply(input: String): Try[String] = {
+  def parse(input: String): Try[String] = {
     if (input == "")
       scala.util.Success("")
     else
@@ -15,15 +15,15 @@ private[document] object InlineParser extends RegexParsers {
       }
   }
 
-  def apply(block: Block): Try[Block] = {
+  def parse(block: Block): Try[Block] = {
     try {
-      val parsedArgLine = InlineParser(block.argLine).get
+      val parsedArgLine = parse(block.argLine).get
       val parsedChildLines =
         if (block.instance == "_text")
-          block.childLines.map(apply).map(_.get)
+          block.childLines.map(parse).map(_.get)
         else
           block.childLines
-      val parsedChildBlocks = block.childBlocks.map(apply).map(_.get)
+      val parsedChildBlocks = block.childBlocks.map(parse).map(_.get)
       val parsedBlock = Block(block.instance, parsedArgLine, block.level, block.lineNum, parsedChildLines, parsedChildBlocks)
       scala.util.Success(parsedBlock)
     } catch {

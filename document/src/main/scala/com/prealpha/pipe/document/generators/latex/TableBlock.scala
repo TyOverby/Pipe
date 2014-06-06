@@ -45,7 +45,7 @@ private[latex] object TableBlock extends BlockGenerator {
               lb.append(c)
         }
         val rawStr = lb.toString().trim.dropRight(1)
-        val parsedStr = rawStr.split("&").map(str => InlineParser(str).get).mkString("&")
+        val parsedStr = rawStr.split("&").map(str => InlineParser.parse(str).get).mkString("&")
         sb.append(parsedStr + " \\\\\n")
       }
     }

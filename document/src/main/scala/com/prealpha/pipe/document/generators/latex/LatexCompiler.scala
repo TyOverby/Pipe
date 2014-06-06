@@ -22,7 +22,7 @@ object LatexCompiler {
     */
   /* TODO: figure out what exceptions this throws (and should throw) */
   def compile(markup: String): String = {
-    val parsed = InlineParser(BlockParser.parse(markup)).get
+    val parsed = InlineParser.parse(BlockParser.parse(markup)).get
 
     val totalSb = new StringBuilder
 
@@ -64,7 +64,7 @@ object LatexCompiler {
   }
 
   private[latex] def compileFragment(markup: String): String = {
-    val parsed = InlineParser(BlockParser.parse(markup)).get
+    val parsed = InlineParser.parse(BlockParser.parse(markup)).get
     RootBlock.produce(parsed)(CompileContext(topLevel))._1
   }
 }
