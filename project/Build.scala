@@ -11,6 +11,8 @@ object Build extends sbt.Build {
         version := "0.4.2"
     )
 
+    lazy val scalajs_parser = RootProject(uri("git://github.com/TyOverby/scala-parser-combinators.git"))
+
     lazy val root = Project(
         id = "vulcan",
         base = file("."),
@@ -18,7 +20,8 @@ object Build extends sbt.Build {
         Seq(
             packMain := Map("vulcan" -> "com.prealpha.pipe.document.EntryPoint")
         )
-    ).dependsOn(math, document).aggregate(math, document)
+    ).dependsOn(math, document, scalajs_parser).aggregate(math, document)
+
 
     lazy val math = Project(
         id = "math",
@@ -28,7 +31,7 @@ object Build extends sbt.Build {
             libraryDependencies += "org.scalatest" % "scalatest_2.11" % "latest.integration" % "test",
             libraryDependencies += "org.xerial" % "xerial-core" % "3.2.1"
         )
-    )
+    ).dependsOn(scalajs_parser)
 
     lazy val document = Project(
         id = "document",
