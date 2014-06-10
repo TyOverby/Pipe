@@ -1,26 +1,25 @@
 package com.prealpha.pipe.document
 
-import java.util
-import scala.collection.JavaConversions.collectionAsScalaIterable
+import scala.collection.mutable
 
 private[document] object BlockParser {
   def parse(chunk: String): Block = {
     val root = new BlockBuilder("_root", "", -1, 0)
 
-    val stack = new util.Stack[BlockBuilder]
+    val stack = new mutable.Stack[BlockBuilder]
     var last = List[BlockBuilder]()
 
     stack.push(root)
     last = root :: last
 
     def insertNode(block: BlockBuilder, line: String) {
-      while (stack.peek().level >= block.level) {
+      while (stack.top.level >= block.level) {
         stack.pop()
       }
 
-      stack.peek().addChild(block)
+      stack.top.addChild(block)
 
-      for (b <- collectionAsScalaIterable(stack)) {
+      for (b <- stack) {
         b.addLine(line)
       }
 
@@ -83,7 +82,7 @@ private[document] object BlockParser {
     var insideText = false
     var bb: BlockBuilder = null
 
-    val lst = new util.ArrayList[BlockBuilder]()
+    val lst = new mutable.ArrayBuffer[BlockBuilder]()
 
     var merged = for (child: BlockBuilder <- root.lst) {
       if (child.instance == "_textline") {
@@ -99,17 +98,17 @@ private[document] object BlockParser {
       } else {
         if (insideText) {
           insideText = false
-          lst.add(bb)
+          lst += bb
         }
         if (child.instance != "_blank") {
-          lst.add(coalesce(child))
+          lst += coalesce(child)
         }
       }
 
     }
 
     if (insideText) {
-      lst.add(bb)
+      lst += bb
     }
 
     root.lst = lst
