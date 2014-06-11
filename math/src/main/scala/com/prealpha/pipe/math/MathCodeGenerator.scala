@@ -122,6 +122,7 @@ private[math] object MathCodeGenerator {
 
       case ("floor", List(contents)) => s"\\left \\lfloor{$contents}\\right \\rfloor"
       case ("ceil", List(contents)) => s"\\left \\lceil{$contents}\\right \\rceil"
+      case ("set", elements) => s"\\left\\{${elements.mkString(", ")}\\right\\}"
 
       case (name, _) if isActuallySuper(name) => genSuperMacro(SuperMacro(name, Seq(m.c)))
 
