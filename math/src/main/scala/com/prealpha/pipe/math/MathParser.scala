@@ -1,7 +1,7 @@
 package com.prealpha.pipe.math
 
+import MathCompiler.Result
 import scala.util.parsing.combinator.{PackratParsers, RegexParsers}
-import scala.util.Try
 import scala.util.parsing.input.PagedSeqReader
 import scala.collection.immutable.PagedSeq
 
@@ -55,51 +55,22 @@ private[math] object MathParser extends RegexParsers with PackratParsers {
 
   lazy val sideDiv: PackratParser[SideDiv] = expr ~ "//" ~ expr ^^ middle(SideDiv)
 
-  def parse(input: String, alignOn: Option[MathExpr] = None): Try[Seq[MathExpr]] = {
-    val rawLines = input.trim.split("\n")
-    joinLines(rawLines).flatMap { joinedLines =>
-      val lineTries = joinedLines.map(parseLine(_, alignOn))
-      if (lineTries.forall(_.isSuccess)) {
-        val lineResults = lineTries.map(_.get)
-        val resultsWithNewlines = lineResults.map(Newline +: _)
-        val joinedResult = (List[MathExpr]() /: resultsWithNewlines)(_ ++ _)
-        scala.util.Success(joinedResult.drop(1))
-      } else {
-        lineTries.dropWhile(_.isSuccess).head
-      }
-    }
-  }
-
-  private def joinLines(lines: Seq[String]): Try[Seq[String]] = lines match {
-    case Seq(first, second, tail @ _ *) =>
-      if (first.endsWith("\\"))
-        joinLines((first.dropRight(1) + second) +: tail)
-      else
-        joinLines(second +: tail).map(first +: _)
-    case Seq(head) =>
-      if (head.endsWith("\\"))
-        scala.util.Failure(new ParseException("no succeeding line to join to", head, ""))
-      else
-        scala.util.Success(head :: Nil)
-    case Seq() =>
-      scala.util.Success(Nil)
-  }
-
-  private def parseLine(line: String, alignOn: Option[MathExpr]): Try[Seq[MathExpr]] = {
-    val psr = new PagedSeqReader(PagedSeq.fromStrings(List(line)))
+  def parseLine(line: JoinedLine, alignOn: Option[MathExpr]): Result[Seq[MathExpr]] = {
+    val psr = new PagedSeqReader(PagedSeq.fromStrings(List(line.toString())))
     val pr = new PackratReader(psr)
     if (line.forall(_.isWhitespace)) {
-      scala.util.Failure(new ParseException("empty line", line, ""))
+      Left(MathCompiler.Failure("empty line", None, line.offset(0)))
     } else {
       parse(phrase(expr.+), pr) match {
         case Success(result, next) => validateAlignment(result, alignOn)
-        case NoSuccess(msg, next) => scala.util.Failure(new ParseException(msg, line, next))
+        case failure: NoSuccess =>
+          Left(MathCompiler.Failure("parse failed: " + failure.msg, Some(failure), line.offset(failure.next.offset)))
       }
     }
   }
 
   /* TODO: this should probably be a stage that manipulates the AST */
-  private def validateAlignment(line: Seq[MathExpr], alignOn: Option[MathExpr]): Try[Seq[MathExpr]] = alignOn match {
+  private def validateAlignment(line: Seq[MathExpr], alignOn: Option[MathExpr]): Result[Seq[MathExpr]] = alignOn match {
     case Some(alignExpr) =>
       val aligners = line.zipWithIndex.filter {
         case (`alignExpr`, _) => true
@@ -108,11 +79,11 @@ private[math] object MathParser extends RegexParsers with PackratParsers {
       if (aligners.length == 1) {
         val index = aligners.head._2
         val replaced = line.slice(0, index) ++ (Align(alignExpr) +: line.slice(index + 1, line.length))
-        scala.util.Success(replaced)
+        Right(replaced)
       } else {
-        scala.util.Failure(new ParseException("invalid aligner count", line, ""))
+        Left(MathCompiler.Failure("invalid aligner count", None, (1, 1)))
       }
     case None =>
-      scala.util.Success(line)
+      Right(line)
   }
 }

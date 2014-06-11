@@ -43,8 +43,8 @@ private[document] object InlineParser extends RegexParsers {
       case Failure(msg, next) => Failure(msg, next)
       // TODO: the type annotation is only for IntelliJ
       case Success(result: String, next) => MathCompiler.compile(result) match {
-        case scala.util.Success(latex) => Success("$" + latex + "$", next)
-        case scala.util.Failure(exception) => Failure(exception.getMessage, next)
+        case Right(latex) => Success("$" + latex + "$", next)
+        case Left(MathCompiler.Failure(msg, _, _)) => Failure(msg, next)
       }
     }
   }
