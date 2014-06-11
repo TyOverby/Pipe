@@ -1,9 +1,9 @@
 package com.prealpha.pipe.math
 
 import scala.util.{Failure, Success, Try}
-//import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.annotation.JSExport
 
-//@JSExport
+@JSExport
 object MathCompiler {
   /** Attempts to compile `source` from math markup into TeX, producing a [[scala.util.Try]] depending on whether
     * compilation was successful. `source` may contain multiple lines, but each line will be treated separately and the
@@ -19,7 +19,7 @@ object MathCompiler {
     * @param alignToken optionally, a token which must be present once on every line
     * @return a compiled TeX string corresponding to `source`
     */
-//  @JSExport
+  @JSExport
   def compile(source: String, alignToken: Option[String] = None): Try[String] = alignToken match {
     case Some(token) =>
       parseToken(token).flatMap { tokenExpr =>
