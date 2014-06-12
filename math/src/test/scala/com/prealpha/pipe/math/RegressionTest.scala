@@ -3,11 +3,11 @@ package com.prealpha.pipe.math
 import org.scalatest.{Matchers, FlatSpec}
 
 class RegressionTest extends FlatSpec with Matchers {
-  def parse(s: String): Seq[MathExpr] = MathParser.parseLine(new JoinedLine(s), None).right.get
+  def parse(s: String): Seq[MathExpr] = MathParser.parseLine(new LogicalLine(s), None).right.get
   def compile(s: String): String = MathCompiler.compile(s).right.get
 
   def parse1(s: String): MathExpr = {
-    val parsed = MathParser.parseLine(new JoinedLine(s), None).right.get
+    val parsed = MathParser.parseLine(new LogicalLine(s), None).right.get
     if (parsed.length != 1) {
       println(parsed)
       assert(parsed.length == 1)

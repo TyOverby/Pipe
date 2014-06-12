@@ -55,7 +55,7 @@ private[math] object MathParser extends RegexParsers with PackratParsers {
 
   lazy val sideDiv: PackratParser[SideDiv] = expr ~ "//" ~ expr ^^ middle(SideDiv)
 
-  def parseLine(line: JoinedLine, alignOn: Option[MathExpr]): Result[Seq[MathExpr]] = {
+  def parseLine(line: LogicalLine, alignOn: Option[MathExpr]): Result[Seq[MathExpr]] = {
     val psr = new PagedSeqReader(PagedSeq.fromStrings(List(line.toString())))
     val pr = new PackratReader(psr)
     if (line.forall(_.isWhitespace)) {

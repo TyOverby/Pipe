@@ -3,11 +3,11 @@ package com.prealpha.pipe.math
 import MathCompiler.{Failure, Result}
 
 private[math] object MathPreprocessor {
-  def preprocess(input: String): Result[Seq[JoinedLine]] = {
-    join(input.trim.split("\n") map (new JoinedLine(_)))
+  def preprocess(input: String): Result[Seq[LogicalLine]] = {
+    join(input.trim.split("\n") map (new LogicalLine(_)))
   }
 
-  private def join(lines: Seq[JoinedLine]): Result[Seq[JoinedLine]] = lines match {
+  private def join(lines: Seq[LogicalLine]): Result[Seq[LogicalLine]] = lines match {
     case Seq(first, second, tail @ _ *) =>
       if (first.endsWith("\\"))
         join((first + second) +: tail)

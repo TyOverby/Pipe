@@ -21,7 +21,7 @@ object MathCompiler {
     * @return a compiled TeX string corresponding to `source`
     */
   def compile(source: String, alignToken: Option[String] = None): Result[String] = {
-    val preprocessed: Result[Seq[JoinedLine]] = MathPreprocessor.preprocess(source)
+    val preprocessed = MathPreprocessor.preprocess(source)
     preprocessed.right flatMap { lines =>
       val alignExpr = alignToken map parseToken flatMap {
         case Right(expr) => Some(expr)
