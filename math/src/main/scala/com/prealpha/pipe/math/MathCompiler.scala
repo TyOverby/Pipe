@@ -1,7 +1,6 @@
 package com.prealpha.pipe.math
 
 object MathCompiler {
-
   final case class Failure(msg: String, cause: Option[Any], offset: (Int, Int))
 
   type Result[+T] = Either[Failure, T]
@@ -21,32 +20,34 @@ object MathCompiler {
     * @return a compiled TeX string corresponding to `source`
     */
   def compile(source: String, alignToken: Option[String] = None): Result[String] = {
-    val preprocessed = MathPreprocessor.preprocess(source)
-    preprocessed.right flatMap { lines =>
-      val alignExpr = alignToken map parseToken flatMap {
-        case Right(expr) => Some(expr)
-        case _ => None
-      }
-      val parsed = lines map (MathParser.parseLine(_, alignExpr))
-      val generated = parsed map (_.right map MathCodeGenerator.genEntire)
-      if (generated forall (_.isRight))
-        Right((generated map (_.right.get)).mkString(" \\\\\n"))
-      else
-        (generated filter (_.isLeft)).head
+    val alignExpr = alignToken map parseToken flatMap {
+      case Right(expr) => Some(expr)
+      case _ => None
     }
+
+    val preprocessed = MathPreprocessor.preprocess(source)
+    val parsed = preprocessed map (_.right flatMap (MathParser.parseLine(_, alignExpr)))
+    val generated = parsed map (_.right map MathCodeGenerator.genEntire)
+    if (generated forall (_.isRight))
+      Right((generated map (_.right.get)).mkString(" \\\\\n"))
+    else
+      (generated filter (_.isLeft)).head
   }
 
   private def parseToken(token: String): Result[MathExpr] = {
-    MathPreprocessor.preprocess(token).right flatMap { lines =>
-      if (lines.length == 1)
-        MathParser.parseLine(lines.head, None).right flatMap { result =>
+    val preprocessed = MathPreprocessor.preprocess(token)
+    if (preprocessed.length == 1)
+      preprocessed.head.right flatMap { line =>
+        MathParser.parseLine(line, None).right flatMap { result =>
           if (result.length == 1)
             Right(result.head)
           else
-            Left(Failure("alignToken is not a single token", None, lines.head.offset(0)))
+            Left(Failure("alignToken is not a single token", None, line.offset(0)))
         }
-      else
-        Left(Failure("alignToken is not a single line", None, lines.head.offset(0)))
-    }
+      }
+    else
+      preprocessed.head.right flatMap { line =>
+        Left(Failure("alignToken is not a single logical line", None, line.offset(line.length - 1)))
+      }
   }
 }
