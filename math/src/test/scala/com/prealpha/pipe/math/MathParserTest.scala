@@ -4,9 +4,9 @@ import org.scalatest._
 import com.prealpha.pipe.math
 
 class MathParserTest extends FlatSpec with Matchers {
-  def parse(s: String): Seq[MathExpr] =  MathParser.parseLine(new LogicalLine(s), None).right.get
+  def parse(s: String): Seq[MathExpr] =  MathParser.parseLine(new LogicalLine(s, 1), None).right.get
   def parse1(s: String): MathExpr = {
-    val parsed = MathParser.parseLine(new LogicalLine(s), None).right.get
+    val parsed = MathParser.parseLine(new LogicalLine(s, 1), None).right.get
     if(parsed.length != 1) {
       println(parsed)
       assert(parsed.length == 1)

@@ -42,11 +42,7 @@ object MathCompiler {
     if (generated forall (_.isRight))
       Right((generated map (_.right.get)).mkString(" \\\\\n"))
     else
-      Left(generated.zipWithIndex filter (_._1.isLeft) map (f => (f._1.left.get, f._2)) map {
-        case (original, index) =>
-          val (line, col) = original.offset
-          Failure(original.msg, original.cause, (line + index, col))
-      })
+      Left(generated filter (_.isLeft) map (_.left.get))
   }
 
   private def parseToken(token: String): Result[MathExpr] = {
