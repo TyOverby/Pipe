@@ -5,19 +5,30 @@ object MathCompiler {
 
   private[math] type Result[+T] = Either[Failure, T]
 
-  /** Attempts to compile `source` from math markup into TeX, producing a [[scala.util.Try]] depending on whether
-    * compilation was successful. `source` may contain multiple lines, but each line will be treated separately and the
-    * emitted TeX will contain line breaks between them, unless the input lines are explicitly joined by ending them
-    * with backslashes.
+  /** Attempts to compile `source` from math markup into TeX, producing either a `String` of generated TeX or a `Seq`
+    * of one or more compilation [[com.prealpha.pipe.math.MathCompiler.Failure Failure]]s.
+    *
+    * `source` may consist of multiple lines; in this case, before any further compilation occurs, the markup will be
+    * translated into a sequence of logical lines, each of which corresponds to one or more physical lines. If a
+    * physical line ends in a backslash character, that line will be joined to the next one to produce a single logical
+    * line. Logical lines are separated in the output by TeX line breaks (double backslashes).
     *
     * `alignToken` is supported for the benefit of the document compiler's `|equation` blocks. If some token is
     * provided, the compiler will first attempt to compile that token by itself, which must produce a single "atomic"
-    * value; it must be a single expression, not several. Then, after `source` is compiled, the compiler will
-    * additionally verify that each (logical) line contains exactly one instance of the alignment expression.
+    * value; it must be a single expression, not several. Then, after `source` is compiled, the compiler will run an
+    * additional stage to verify that each logical line contains exactly one instance of the alignment expression (at
+    * the top level) and to insert a TeX aligner (`&`) where the expressions occur. This behavior allows clients to use
+    * the output within a TeX equation environment or similar environment requiring aligners.
+    *
+    * The compiler will attempt to identify and report as many compilation errors as it can at once. Generally, an
+    * error occurring during the preprocessor or parser stages will terminate processing of that logical line, while
+    * an error during an AST stage will terminate processing of the offending AST node and its ancestors. However,
+    * these behaviors are not guaranteed. In `Failure`s, line numbers are reported using the first physical line of
+    * `source` as line 1.
     *
     * @param source the math markup to compile
     * @param alignToken optionally, a token which must be present once on every line
-    * @return a compiled TeX string corresponding to `source`
+    * @return either a compiled Tex string corresponding to `source`, or a `Seq` of one or more compilation `Failure`s
     */
   def compile(source: String, alignToken: Option[String] = None): Either[Seq[Failure], String] = {
     val alignExpr = alignToken map parseToken flatMap {
