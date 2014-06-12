@@ -1,89 +1,39 @@
 package com.prealpha.pipe.math
 
 private[math] object MathCodeGenerator {
-  def genEntire(exprs: Seq[MathExpr]): String = {
-    val sb = new StringBuilder
-    genMulti(exprs)(sb)
-    sb.toString()
+  def generate(expr: MathExpr): String = expr match {
+    case Chunk(s) => s
+    case Symbol(s) => "\\" + s
+    case Comment(s) => s"&& \\text{$s}"
+    case Align(o) => "&" + generate(o)
+    case Paren(xs) =>
+      val contents = xs map generate mkString " "
+      s"\\left( $contents \\right)"
+    case m: Macro => genMacro(m)
+    case m: SuperMacro => genSuperMacro(m)
+    case SuperScript(normal, over) =>
+      val normalStr = generate(normal)
+      val overStr = generateDroppingParens(over)
+      s"{$normalStr}^{$overStr}"
+    case SubScript(normal, under) =>
+      val normalStr = generate(normal)
+      val underStr = generateDroppingParens(under)
+      s"{$normalStr}_{$underStr}"
+    case OverDiv(numer, denom) =>
+      val numerStr = generateDroppingParens(numer)
+      val denomStr = generateDroppingParens(denom)
+      s"\\dfrac{$numerStr}{$denomStr}"
+    case SideDiv(numer, denom) =>
+      val numerStr = generate(numer)
+      val denomStr = generate(denom)
+      s"$numerStr / $denomStr"
   }
 
-  private def genMulti(exprs: Seq[MathExpr])(implicit builder: StringBuilder) {
-    if (exprs.isEmpty) {
-      return
-    }
-    exprs.init.foreach { e =>
-      genSingle(e)
-      builder.append(" ")
-    }
-
-    genSingle(exprs.last)
-  }
-
-  private def genSingle(expr: MathExpr)(implicit sb: StringBuilder) {
-    expr match {
-      case Chunk(s) => sb ++= s
-      case Symbol(s) => sb ++= "\\" ++= s
-      case Comment(s) => sb ++= "&& " ++= "\\text{" ++= s ++= "}"
-      case Align(o) => sb ++= "&"; genSingle(o)
-      case Paren(xs) =>
-        sb ++= "\\left( "
-        genMulti(xs)
-        sb ++= " \\right)"
-      case m: Macro => sb ++= genMacro(m)
-      case m: SuperMacro => sb ++= genSuperMacro(m)
-      case SuperScript(normal, Paren(overs)) =>
-        sb ++= "{"
-        genSingle(normal)
-        sb ++= "}^{"
-        genMulti(overs)
-        sb ++= "}"
-      case SuperScript(normal, over) =>
-        sb ++= "{"
-        genSingle(normal)
-        sb ++= "}^{"
-        genSingle(over)
-        sb ++= "}"
-      case SubScript(normal, Paren(unders)) =>
-        sb ++= "{"
-        genSingle(normal)
-        sb ++= "}_{"
-        genMulti(unders)
-        sb ++= "}"
-      case SubScript(normal, under) =>
-        sb ++= "{"
-        genSingle(normal)
-        sb ++= "}_{"
-        genSingle(under)
-        sb ++= "}"
-      case OverDiv(Paren(xs), Paren(ys)) =>
-        sb ++= "\\dfrac{"
-        genMulti(xs)
-        sb ++= "}{"
-        genMulti(ys)
-        sb ++= "}"
-      case OverDiv(Paren(xs), denom) =>
-        sb ++= "\\dfrac{"
-        genMulti(xs)
-        sb ++= "}{"
-        genSingle(denom)
-        sb ++= "}"
-      case OverDiv(numer, Paren(ys)) =>
-        sb ++= "\\dfrac{"
-        genSingle(numer)
-        sb ++= "}{"
-        genMulti(ys)
-        sb ++= "}"
-      case OverDiv(numer, denom) =>
-        sb ++= "\\dfrac{"
-        genSingle(numer)
-        sb ++= "}{"
-        genSingle(denom)
-        sb ++= "}"
-      case SideDiv(numer, denom) =>
-        genSingle(numer)
-        sb ++= " / "
-        genSingle(denom)
-    }
+  private def generateDroppingParens(expr: MathExpr): String = expr match {
+    case Paren(xs) =>
+      xs map generate mkString " "
+    case _ =>
+      generate(expr)
   }
 
   private def genMacro(m: Macro): String = {
@@ -96,7 +46,7 @@ private[math] object MathCodeGenerator {
         superNames.contains(name) || name.endsWith("matrix")
     }
 
-    (m.name, m.c.map(genEntire)) match {
+    (m.name, m.c.map(_ map generate mkString " ")) match {
       case ("sqrt", List(contents)) => s"\\sqrt{$contents}"
       case ("sqrt", _) => throw new ParseException("!sqrt(...) takes one argument", "", "")
 
@@ -131,7 +81,7 @@ private[math] object MathCodeGenerator {
       s"\\begin{${ident}matrix}\n$rowsStr\n\\end{${ident}matrix}"
     }
 
-    (m.name, m.c.map(_.map(genEntire))) match {
+    (m.name, m.c.map(_.map(_ map generate mkString " "))) match {
       case ("cases", cases) =>
         if (cases.exists(_.length != 2))
           throw new ParseException("Incorrect usage of cases macro. " +

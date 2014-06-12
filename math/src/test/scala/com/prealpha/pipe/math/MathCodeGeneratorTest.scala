@@ -4,7 +4,7 @@ import org.scalatest._
 import com.prealpha.pipe.math
 
 class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
-  def compile(expr: MathExpr*): String = MathCodeGenerator.genEntire(expr)
+  def compile(expr: MathExpr*): String = expr map MathCodeGenerator.generate mkString " "
 
   "symbols" should "be translated literally to their LaTeX forms" in {
     // :foo
