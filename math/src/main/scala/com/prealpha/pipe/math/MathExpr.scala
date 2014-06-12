@@ -13,4 +13,3 @@ private[math] case class OverDiv(numer: MathExpr, denom: MathExpr) extends MathE
 private[math] case class SideDiv(numer: MathExpr, denom: MathExpr) extends MathExpr
 private[math] case class Align(nextTo: MathExpr) extends MathExpr
 private[math] case class Comment(text: String) extends MathExpr
-private[math] case object Newline extends MathExpr

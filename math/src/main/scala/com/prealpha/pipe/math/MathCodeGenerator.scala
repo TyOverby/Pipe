@@ -11,12 +11,9 @@ private[math] object MathCodeGenerator {
     if (exprs.isEmpty) {
       return
     }
-    exprs.init.foreach {
-      case Newline =>
-        genSingle(Newline)
-      case e =>
-        genSingle(e)
-        builder.append(" ")
+    exprs.init.foreach { e =>
+      genSingle(e)
+      builder.append(" ")
     }
 
     genSingle(exprs.last)
@@ -86,8 +83,6 @@ private[math] object MathCodeGenerator {
         genSingle(numer)
         sb ++= " / "
         genSingle(denom)
-      case Newline =>
-        sb ++= "\\\\\n"
     }
   }
 
