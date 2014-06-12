@@ -3,7 +3,7 @@ package com.prealpha.pipe.math
 object MathCompiler {
   final case class Failure(msg: String, cause: Option[Any], offset: (Int, Int))
 
-  type Result[+T] = Either[Failure, T]
+  private[math] type Result[+T] = Either[Failure, T]
 
   /** Attempts to compile `source` from math markup into TeX, producing a [[scala.util.Try]] depending on whether
     * compilation was successful. `source` may contain multiple lines, but each line will be treated separately and the
@@ -19,7 +19,7 @@ object MathCompiler {
     * @param alignToken optionally, a token which must be present once on every line
     * @return a compiled TeX string corresponding to `source`
     */
-  def compile(source: String, alignToken: Option[String] = None): Result[String] = {
+  def compile(source: String, alignToken: Option[String] = None): Either[Seq[Failure], String] = {
     val alignExpr = alignToken map parseToken flatMap {
       case Right(expr) => Some(expr)
       case _ => None
@@ -31,7 +31,11 @@ object MathCompiler {
     if (generated forall (_.isRight))
       Right((generated map (_.right.get)).mkString(" \\\\\n"))
     else
-      (generated filter (_.isLeft)).head
+      Left(generated.zipWithIndex filter (_._1.isLeft) map (f => (f._1.left.get, f._2)) map {
+        case (original, index) =>
+          val (line, col) = original.offset
+          Failure(original.msg, original.cause, (line + index, col))
+      })
   }
 
   private def parseToken(token: String): Result[MathExpr] = {
