@@ -5,7 +5,7 @@ import MathCompiler.{Failure, Result}
 private[math] object MathPreprocessor {
   def preprocess(input: String): Seq[Result[LogicalLine]] = {
     join(input.trim.split("\n").zipWithIndex map {
-      case (line, index) => new LogicalLine(line, index)
+      case (line, index) => new LogicalLine(line, index + 1)
     })
   }
 
