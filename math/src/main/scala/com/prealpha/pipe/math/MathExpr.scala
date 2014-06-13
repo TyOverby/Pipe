@@ -1,6 +1,8 @@
 package com.prealpha.pipe.math
 
-private[math] sealed trait MathExpr
+import scala.util.parsing.input.Positional
+
+private[math] sealed trait MathExpr extends Positional
 
 private[math] case class Chunk(contents: String) extends MathExpr
 private[math] case class Symbol(name: String) extends MathExpr

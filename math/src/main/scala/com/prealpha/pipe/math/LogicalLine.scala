@@ -15,7 +15,7 @@ private[math] class LogicalLine private (
 
   def +(other: LogicalLine): LogicalLine = {
     assert(this.line.endsWith("\\"))
-    val newLine = this.line.dropRight(1) + " " + other.line
+    val newLine = this.line.dropRight(1) + "\n" + other.line
     val newBreaks = this.breaks ++ other.breaks + line.length
     new LogicalLine(newLine, newBreaks, this.startingAt)
   }
