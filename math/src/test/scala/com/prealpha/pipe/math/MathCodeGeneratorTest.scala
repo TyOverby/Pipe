@@ -137,6 +137,8 @@ class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
     intercept[ParseException[_]] {
       compile(Macro("limit", Seq(Seq(), Seq(), Seq())))
     }
+
+    compile(Macro("set", Seq(Seq(Chunk("a")), Seq(Chunk("b"))))) should be ("\\left\\{a, b\\right\\}")
   }
 
   "the cases supermacro" should "compile correctly" in {
