@@ -55,7 +55,7 @@ private[latex] object MathBlock extends BlockGenerator {
     val children = block.childBlocks.map({
       case b@Block("_text", _, _, _, _, _) => merge(Seq(parseInline(b.childLines.mkString("\n"))))
       case b@Block("equation", _, _, _, _, _) => compile(b)
-      case x => throw new BlockException(x, "The |equation is allowd inside of |math")
+      case x => throw new BlockException(x, "The |equation is allowed inside of |math")
     })
 
     merge(argline ++ children)
