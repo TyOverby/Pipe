@@ -10,6 +10,11 @@ private[latex] object EquationBlock extends BlockGenerator {
     block.instance == "equation"
 
   override def produce(block: Block)(implicit ctx: CompileContext): (String, ResultContext) = {
+    // Empty equation blocks break latex.  In this case, we will just return nothing.
+    if (!block.childLines.exists(_.trim.length > 0)) {
+      return ("", ResultContext())
+    }
+
     val args = block.argLine.split("\\s+").toList.filter(!_.isEmpty)
     val sb = new StringBuilder
 
