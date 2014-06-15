@@ -148,7 +148,7 @@ class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
     ))) should be {
       "\\begin{cases}\n" +
       "x < 5 & foo \\\n" +
-      "x >= 5 & bar\n" +
+      "x \\geq 5 & bar\n" +
       "\\end{cases}"
     }
     // TODO(TyOverby): More tests
@@ -210,5 +210,15 @@ class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
     compile(Chunk("...")) should be("\\hdots")
     compile(Chunk("*")) should be("\\times")
     compile(Chunk("a"), Chunk("*"), Chunk("b")) should be("a \\times b")
+    compile(Chunk(">=")) should be("\\geq")
+    compile(Chunk("<=")) should be("\\leq")
+    compile(Chunk("!=")) should be("\\neq")
+  }
+
+  "special symbols" should "be treated differently by the compiler" in {
+    compile(Symbol("not")) should be("\\lnot")
+    compile(Symbol("and")) should be("\\land")
+    compile(Symbol("or")) should be("\\lor")
+    compile(Symbol("xor")) should be("\\oplus")
   }
 }

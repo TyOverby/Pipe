@@ -26,7 +26,14 @@ private[math] object MathCodeGenerator {
     expr match {
       case Chunk("...") => sb ++= "\\hdots"
       case Chunk("*") => sb ++= "\\times"
+      case Chunk("!=") => sb ++= "\\neq"
+      case Chunk(">=") => sb ++= "\\geq"
+      case Chunk("<=") => sb ++= "\\leq"
       case Chunk(s) => sb ++= s
+      case Symbol("not") => sb ++= "\\lnot"
+      case Symbol("or") => sb ++= "\\lor"
+      case Symbol("and") => sb ++= "\\land"
+      case Symbol("xor") => sb ++= "\\oplus"
       case Symbol(s) => sb ++= "\\" ++= s
       case Comment(s) => sb ++= "&& " ++= "\\text{" ++= s ++= "}"
       case Align(o) => sb ++= "&"; genSingle(o)
