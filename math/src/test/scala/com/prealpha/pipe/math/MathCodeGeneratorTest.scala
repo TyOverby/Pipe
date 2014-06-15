@@ -208,5 +208,7 @@ class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
 
   "special chunks" should "be treated differently by the compiler" in {
     compile(Chunk("...")) should be("\\hdots")
+    compile(Chunk("*")) should be("\\times")
+    compile(Chunk("a"), Chunk("*"), Chunk("b")) should be("a \\times b")
   }
 }
