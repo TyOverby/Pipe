@@ -14,12 +14,12 @@ private[math] object MathParser extends RegexParsers with PackratParsers {
 
   lazy val expr: PackratParser[MathExpr] =
     comment | overDiv | sideDiv | superScript | subScript | atNotation |
-      paren | symbol | marco | superMarco |
+      wrapper | symbol | marco | superMarco |
       (numericChunk | symbolicChunk | characterChunk)
 
   // Used for the arguments to super and sub scripts.
   lazy val scriptExpr: PackratParser[MathExpr] =
-    paren | symbol | marco | superMarco |
+    wrapper | symbol | marco | superMarco |
       (numericChunk | symbolicChunk | characterChunk)
 
   lazy val noCommaExpr: PackratParser[MathExpr] = expr.flatMap{
@@ -27,7 +27,7 @@ private[math] object MathParser extends RegexParsers with PackratParsers {
     case a => success(a)
   }
 
-  lazy val symbolicChunk: PackratParser[Chunk] = "[^()@!:#;/_\\ ^a-zA-Z0-9]+".r ^^ Chunk
+  lazy val symbolicChunk: PackratParser[Chunk] = "[^(){}\\[\\]@!:#;/_\\ ^a-zA-Z0-9]+".r ^^ Chunk
   lazy val characterChunk: PackratParser[Chunk] = "[a-zA-Z]+".r ^^ Chunk
   lazy val numericChunk: PackratParser[Chunk] = "-?[0-9.]+".r ^^ Chunk
 
@@ -36,6 +36,12 @@ private[math] object MathParser extends RegexParsers with PackratParsers {
   lazy val comment: PackratParser[Comment] = "#" ~> "[^\\n]*".r <~ "$".r ^^ Comment
 
   lazy val paren: PackratParser[Paren] = "(" ~> expr.* <~ ")" ^^ Paren
+
+  lazy val brace: PackratParser[Brace] = "{" ~> expr.* <~ "}" ^^ Brace
+
+  lazy val bracket: PackratParser[Bracket] = "[" ~> expr.* <~ "]" ^^ Bracket
+
+  lazy val wrapper: PackratParser[MathExpr] = paren | brace | bracket
 
   lazy val commaSep: PackratParser[Seq[Seq[MathExpr]]] = noCommaExpr.* ~ ("," ~> noCommaExpr.*).* ^^ cons
 

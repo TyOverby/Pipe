@@ -39,6 +39,12 @@ class MathParserTest extends FlatSpec with Matchers {
     parse1("(n + 1) ^ 2") should be (SuperScript(Paren(Seq(Chunk("n"), Chunk("+"), Chunk("1"))), Chunk("2")))
   }
 
+  it should "handle all the types of groupings" in {
+    parse1("(a + b)") should be(Paren(Seq(Chunk("a"), Chunk("+"), Chunk("b"))))
+    parse1("[a + b]") should be(Bracket(Seq(Chunk("a"), Chunk("+"), Chunk("b"))))
+    parse1("{a + b}") should be(Brace(Seq(Chunk("a"), Chunk("+"), Chunk("b"))))
+  }
+
   it should "handle subscripts" in {
     parse1("n_2") should be (SubScript(Chunk("n"), Chunk("2")))
     parse1("k_(n + 1)") should be (SubScript(Chunk("k"), Paren(Seq(Chunk("n"), Chunk("+"), Chunk("1")))))

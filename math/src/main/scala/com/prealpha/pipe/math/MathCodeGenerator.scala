@@ -41,6 +41,14 @@ private[math] object MathCodeGenerator {
         sb ++= "\\left( "
         genMulti(xs)
         sb ++= " \\right)"
+      case Brace(xs) =>
+        sb ++= "\\left\\{ "
+        genMulti(xs)
+        sb ++= " \\right\\}"
+      case Bracket(xs) =>
+        sb ++= "\\left[ "
+        genMulti(xs)
+        sb ++= " \\right]"
       case m: Macro => sb ++= genMacro(m)
       case m: SuperMacro => sb ++= genSuperMacro(m)
       case SuperScript(normal, Paren(overs)) =>

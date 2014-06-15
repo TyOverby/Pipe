@@ -5,6 +5,8 @@ private[math] sealed trait MathExpr
 private[math] case class Chunk(contents: String) extends MathExpr
 private[math] case class Symbol(name: String) extends MathExpr
 private[math] case class Paren(c: Seq[MathExpr]) extends MathExpr
+private[math] case class Brace(c: Seq[MathExpr]) extends MathExpr
+private[math] case class Bracket(c: Seq[MathExpr]) extends MathExpr
 private[math] case class Macro(name: String, c: Seq[Seq[MathExpr]]) extends MathExpr
 private[math] case class SuperMacro(name: String, c: Seq[Seq[Seq[MathExpr]]]) extends MathExpr
 private[math] case class SuperScript(normal: MathExpr, over: MathExpr) extends MathExpr
