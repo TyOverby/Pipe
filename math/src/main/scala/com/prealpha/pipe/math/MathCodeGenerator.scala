@@ -107,7 +107,7 @@ private[math] object MathCodeGenerator {
 
       case (s, List()) if easyMap.contains(s) => s"\\${easyMap(s)}"
       case (s, List(lower)) if easyMap.contains(s) => s"\\${easyMap(s)}_{$lower}"
-      case (s, List(lower, upper)) if easyMap.contains(s) => s"\\${easyMap(s)}_{$lower}{$upper}"
+      case (s, List(lower, upper)) if easyMap.contains(s) => s"\\${easyMap(s)}_{$lower}^{$upper}"
       case (s, _) if easyMap.contains(s) => throw new ParseException(s"!$s(...) takes either 0, 1, or 2 arguments.", "", "")
 
       case ("limit", List())  => "\\lim"

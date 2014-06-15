@@ -126,6 +126,7 @@ class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
     compile(Macro("sum", Seq(Seq(Chunk("i = 0"))))) should be ("\\sum_{i = 0}")
     compile(Macro("sum", Seq(Seq(Chunk("i"), Chunk("="), Chunk("0"))))) should be ("\\sum_{i = 0}")
     compile(Macro("sum", Seq(Seq(Chunk("i = 0"))))) should be ("\\sum_{i = 0}")
+    compile(Macro("sum", Seq(Seq(Chunk("k"), Chunk("="), Chunk("1")), Seq(Chunk("4"))))) should be ("\\sum_{k = 1}^{4}")
     intercept[ParseException[_]] {
       compile(Macro("sum",Seq(Seq(), Seq(), Seq())))
     }
