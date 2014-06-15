@@ -39,11 +39,21 @@ object MathCompiler {
     val preprocessed = MathPreprocessor.preprocess(source)
     val parsed = preprocessed map (_.right flatMap MathParser.parseLine)
     val aligned = parsed map (_.right flatMap AlignmentValidator.validateAlignment(alignExpr))
-    val generated = aligned map (_.right map (_ map MathCodeGenerator.generate mkString " "))
-    if (generated forall (_.isRight))
-      Right((generated map (_.right.get)).mkString(" \\\\\n"))
-    else
+    val generated = aligned map (_.right map (_ map MathCodeGenerator.generate))
+    if (generated forall (_.isRight)) {
+      val gathered = generated map (_.right.get) map { line =>
+        if (line forall (_.isRight))
+          Right(line map (_.right.get) mkString " ")
+        else
+          Left(line filter (_.isLeft) map (_.left.get))
+      }
+      if (gathered forall (_.isRight))
+        Right(gathered map (_.right.get) mkString " \\\\\n")
+      else
+        Left(gathered filter (_.isLeft) map (_.left.get) flatten)
+    } else {
       Left(generated filter (_.isLeft) map (_.left.get))
+    }
   }
 
   private def parseToken(token: String): Result[MathExpr] = {

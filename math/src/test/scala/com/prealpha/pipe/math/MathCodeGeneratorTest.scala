@@ -1,10 +1,19 @@
 package com.prealpha.pipe.math
 
+import MathCompiler.Result
 import org.scalatest._
 import com.prealpha.pipe.math
 
 class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
-  def compile(expr: MathExpr*): String = expr map MathCodeGenerator.generate mkString " "
+  def compile(expr: MathExpr*): String = expr map MathCodeGenerator.generate map (_.right.get) mkString " "
+
+  def compileToResult(expr: MathExpr*): Result[String] = {
+    val results = expr map MathCodeGenerator.generate
+    if (results forall (_.isRight))
+      Right(results map (_.right.get) mkString " ")
+    else
+      (results filter (_.isLeft)).head
+  }
 
   "symbols" should "be translated literally to their LaTeX forms" in {
     // :foo
@@ -117,25 +126,19 @@ class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
     compile(Macro("sqrt", Seq(Seq(Chunk("x"), Chunk("+"), math.Symbol("alpha"))))) should be {
       "\\sqrt{x + \\alpha}"
     }
-    intercept[ParseException[_]] {
-      compile(Macro("sqrt", Seq()))
-    }
+    compileToResult(Macro("sqrt", Seq())) should be ('Left)
 
     compile(Macro("sum", Seq())) should be ("\\sum")
     compile(Macro("sum", Seq(Seq(Chunk("a"))))) should be ("\\sum_{a}")
     compile(Macro("sum", Seq(Seq(Chunk("i = 0"))))) should be ("\\sum_{i = 0}")
     compile(Macro("sum", Seq(Seq(Chunk("i"), Chunk("="), Chunk("0"))))) should be ("\\sum_{i = 0}")
     compile(Macro("sum", Seq(Seq(Chunk("i = 0"))))) should be ("\\sum_{i = 0}")
-    intercept[ParseException[_]] {
-      compile(Macro("sum",Seq(Seq(), Seq(), Seq())))
-    }
+    compileToResult(Macro("sum",Seq(Seq(), Seq(), Seq()))) should be ('Left)
 
     compile(Macro("limit", Seq())) should be ("\\lim")
     compile(Macro("limit", Seq(Seq(Chunk("i to 0"))))) should be ("\\lim_{i to 0}")
     compile(Macro("limit", Seq(Seq(Chunk("i")), Seq(math.Symbol("inf"))))) should be ("\\lim_{i \\to \\inf}")
-    intercept[ParseException[_]] {
-      compile(Macro("limit", Seq(Seq(), Seq(), Seq())))
-    }
+    compileToResult(Macro("limit", Seq(Seq(), Seq(), Seq()))) should be ('Left)
   }
 
   "the cases supermacro" should "compile correctly" in {
@@ -184,22 +187,14 @@ class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
   }
 
   "hat and vector" should "work with both macro syntax" in {
-    intercept[ParseException[_]](compile(Macro("hat", Seq())))
-    compile(Macro("hat", Seq(Seq(Chunk("foo")))))
+    compileToResult(Macro("hat", Seq())) should be ('Left)
+    compile(Macro("hat", Seq(Seq(Chunk("foo"))))) should be ("\\hat{foo}")
   }
 
   it should "fail when used incorrectly" in {
-    intercept[ParseException[_]]{
-      compile(Macro("floor", Seq()))
-    }
-    intercept[ParseException[_]]{
-      compile(Macro("ceil", Seq()))
-    }
-    intercept[ParseException[_]]{
-      compile(Macro("floor", Seq(Seq(), Seq())))
-    }
-    intercept[ParseException[_]]{
-      compile(Macro("ceil", Seq(Seq(), Seq())))
-    }
+    compileToResult(Macro("floor", Seq())) should be ('Left)
+    compileToResult(Macro("ceil", Seq())) should be ('Left)
+    compileToResult(Macro("floor", Seq(Seq(), Seq()))) should be ('Left)
+    compileToResult(Macro("ceil", Seq(Seq(), Seq()))) should be ('Left)
   }
 }
