@@ -83,36 +83,19 @@ private[math] object MathParser extends RegexParsers with PackratParsers {
     expr ~ "//" ~ expr ^^ middle(SideDiv)
   )
 
-  def parseLine(line: LogicalLine, alignOn: Option[MathExpr]): Result[Seq[MathExpr]] = {
+  def parseLine(line: LogicalLine): Result[Seq[MathExpr]] = {
     val psr = new PagedSeqReader(PagedSeq.fromStrings(List(line.toString())))
     val pr = new PackratReader(psr)
     if (line.forall(_.isWhitespace)) {
       Left(MathCompiler.Failure("empty line", None, line.offset(0)))
     } else {
       parse(phrase(expr.+), pr) match {
-        case Success(result, next) => validateAlignment(result, alignOn)
+        case Success(result, next) =>
+          Right(result)
         case failure: NoSuccess =>
           Left(MathCompiler.Failure("parse failed: " + failure.msg, Some(failure), line.offset(failure.next.offset)))
       }
     }
-  }
-
-  /* TODO: this should probably be a stage that manipulates the AST */
-  private def validateAlignment(line: Seq[MathExpr], alignOn: Option[MathExpr]): Result[Seq[MathExpr]] = alignOn match {
-    case Some(alignExpr) =>
-      val aligners = line.zipWithIndex.filter {
-        case (`alignExpr`, _) => true
-        case _ => false
-      }
-      if (aligners.length == 1) {
-        val index = aligners.head._2
-        val replaced = line.slice(0, index) ++ (Align(alignExpr) +: line.slice(index + 1, line.length))
-        Right(replaced)
-      } else {
-        Left(MathCompiler.Failure("invalid aligner count", None, (1, 1)))
-      }
-    case None =>
-      Right(line)
   }
 
   /*

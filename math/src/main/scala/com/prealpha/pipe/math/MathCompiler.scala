@@ -37,8 +37,9 @@ object MathCompiler {
     }
 
     val preprocessed = MathPreprocessor.preprocess(source)
-    val parsed = preprocessed map (_.right flatMap (MathParser.parseLine(_, alignExpr)))
-    val generated = parsed map (_.right map (_ map MathCodeGenerator.generate mkString " "))
+    val parsed = preprocessed map (_.right flatMap MathParser.parseLine)
+    val aligned = parsed map (_.right flatMap AlignmentValidator.validateAlignment(alignExpr))
+    val generated = aligned map (_.right map (_ map MathCodeGenerator.generate mkString " "))
     if (generated forall (_.isRight))
       Right((generated map (_.right.get)).mkString(" \\\\\n"))
     else
@@ -49,7 +50,7 @@ object MathCompiler {
     val preprocessed = MathPreprocessor.preprocess(token)
     if (preprocessed.length == 1)
       preprocessed.head.right flatMap { line =>
-        MathParser.parseLine(line, None).right flatMap { result =>
+        MathParser.parseLine(line).right flatMap { result =>
           if (result.length == 1)
             Right(result.head)
           else
