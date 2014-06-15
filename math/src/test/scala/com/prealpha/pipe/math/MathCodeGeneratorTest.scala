@@ -203,4 +203,8 @@ class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
       compile(Macro("ceil", Seq(Seq(), Seq())))
     }
   }
+
+  "special chunks" should "be treated differently by the compiler" in {
+    compile(Chunk("...")) should be("\\hdots")
+  }
 }

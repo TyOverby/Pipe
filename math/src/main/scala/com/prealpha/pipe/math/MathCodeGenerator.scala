@@ -24,6 +24,7 @@ private[math] object MathCodeGenerator {
 
   private def genSingle(expr: MathExpr)(implicit sb: StringBuilder) {
     expr match {
+      case Chunk("...") => sb ++= "\\hdots"
       case Chunk(s) => sb ++= s
       case Symbol(s) => sb ++= "\\" ++= s
       case Comment(s) => sb ++= "&& " ++= "\\text{" ++= s ++= "}"
