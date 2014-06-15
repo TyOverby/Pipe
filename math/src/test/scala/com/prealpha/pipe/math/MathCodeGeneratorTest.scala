@@ -23,7 +23,9 @@ class MathCodeGeneratorTest extends FlatSpec with ShouldMatchers {
   "parenthesis" should "open and close correctly" in {
     // (akbar)
     compile(Paren(Seq(Chunk("akbar")))) should be ("\\left( akbar \\right)")
+    // {akbar}
     compile(Brace(Seq(Chunk("akbar")))) should be ("\\left\\{ akbar \\right\\}")
+    // [akbar]
     compile(Bracket(Seq(Chunk("akbar")))) should be ("\\left[ akbar \\right]")
   }
 
