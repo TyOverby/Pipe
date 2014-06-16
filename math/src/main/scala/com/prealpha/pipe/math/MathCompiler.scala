@@ -37,29 +37,25 @@ object MathCompiler {
     }
 
     val preprocessed = MathPreprocessor.preprocess(source)
-    val parsed = preprocessed map (_.right flatMap MathParser.parseLine)
-    val aligned = parsed map (_.right flatMap AlignmentValidator.validateAlignment(alignExpr))
-    val generated = aligned map (_.right map (_ map MathCodeGenerator.generate))
-    if (generated forall (_.isRight)) {
-      val gathered = generated map (_.right.get) map { line =>
-        if (line forall (_.isRight))
-          Right(line map (_.right.get) mkString " ")
-        else
-          Left(line filter (_.isLeft) map (_.left.get))
+    val results = preprocessed map (_.left map (Seq(_))) map (_.right flatMap { ll =>
+      val parsed = MathParser.parseLine(ll)
+      val aligned = parsed.right flatMap AlignmentValidator.validateAlignment(alignExpr)
+      val generated = aligned.right map (_ map MathCodeGenerator.generate)
+      (generated.left map (Seq(_))).right flatMap { exprResults =>
+        if (exprResults forall (_.isRight)) {
+          Right(exprResults.map(_.right.get) mkString " ")
+        } else {
+          Left(exprResults filter (_.isLeft) map (_.left.get) map { failure =>
+            val line = failure.offset._1 + ll.offset(0)._1 - 1
+            Failure(failure.msg, failure.cause, (line, failure.offset._2))
+          })
+        }
       }
-      if (gathered forall (_.isRight))
-        Right(gathered map (_.right.get) mkString " \\\\\n")
-      else
-        Left(gathered filter (_.isLeft) map (_.left.get) flatten)
-    } else {
-      val failures = generated map {
-        case Right(exprResults) =>
-          exprResults filter (_.isLeft) map (_.left.get)
-        case Left(failure) =>
-          Seq(failure)
-      }
-      Left(failures.flatten)
-    }
+    })
+    if (results forall (_.isRight))
+      Right(results map (_.right.get) mkString " \\\\\n")
+    else
+      Left((results filter (_.isLeft) map (_.left.get)).flatten)
   }
 
   private def parseToken(token: String): Result[MathExpr] = {
