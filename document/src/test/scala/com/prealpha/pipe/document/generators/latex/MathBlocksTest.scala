@@ -44,4 +44,9 @@ class MathBlocksTest extends FlatSpec with Matchers {
     LatexCompiler.compileFragment(input) should
       be ("\\begin{align*}\n\\left( a + b + c + d \\right)\n\\end{align*}")
   }
+
+  "an empty equation" should "not generate anything" in {
+    val input = "|equation"
+    LatexCompiler.compileFragment(input) should be ("")
+  }
 }

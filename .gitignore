@@ -3,5 +3,5 @@ target/
 *.iml
 .idea/
 .idea_modules/
-.swp
-.swo
+*.swp
+*.swo

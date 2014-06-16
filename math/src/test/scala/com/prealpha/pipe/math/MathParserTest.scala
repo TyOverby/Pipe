@@ -4,9 +4,9 @@ import org.scalatest._
 import com.prealpha.pipe.math
 
 class MathParserTest extends FlatSpec with Matchers {
-  def parse(s: String): Seq[MathExpr] =  MathParser.parse(s).get
+  def parse(s: String): Seq[MathExpr] =  MathParser.parseLine(new LogicalLine(s, 1)).right.get
   def parse1(s: String): MathExpr = {
-    val parsed = MathParser.parse(s).get
+    val parsed = MathParser.parseLine(new LogicalLine(s, 1)).right.get
     if(parsed.length != 1) {
       println(parsed)
       assert(parsed.length == 1)
@@ -37,6 +37,12 @@ class MathParserTest extends FlatSpec with Matchers {
     parse1("x^-1") should be (SuperScript(Chunk("x"), Chunk("-1")))
     parse1("2 ^ (n + 1)") should be (SuperScript(Chunk("2"), Paren(Seq(Chunk("n"), Chunk("+"), Chunk("1")))))
     parse1("(n + 1) ^ 2") should be (SuperScript(Paren(Seq(Chunk("n"), Chunk("+"), Chunk("1"))), Chunk("2")))
+  }
+
+  it should "handle all the types of groupings" in {
+    parse1("(a + b)") should be(Paren(Seq(Chunk("a"), Chunk("+"), Chunk("b"))))
+    parse1("[a + b]") should be(Bracket(Seq(Chunk("a"), Chunk("+"), Chunk("b"))))
+    parse1("{a + b}") should be(Brace(Seq(Chunk("a"), Chunk("+"), Chunk("b"))))
   }
 
   it should "handle subscripts" in {

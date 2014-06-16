@@ -1,9 +1,10 @@
 package com.prealpha.pipe.math
 
-import scala.util.parsing.combinator.{PackratParsers, RegexParsers}
-import scala.util.Try
-import scala.util.parsing.input.PagedSeqReader
+import com.prealpha.pipe.math.MathCompiler.Result
+
 import scala.collection.immutable.PagedSeq
+import scala.util.parsing.combinator.{PackratParsers, RegexParsers}
+import scala.util.parsing.input.{PagedSeqReader, Positional}
 
 private[math] object MathParser extends RegexParsers with PackratParsers {
   def middle[L, R, Res](f: (L, R) => Res)(expr: ~[~[L, _], R]): Res = {
@@ -14,105 +15,112 @@ private[math] object MathParser extends RegexParsers with PackratParsers {
 
   lazy val expr: PackratParser[MathExpr] =
     comment | overDiv | sideDiv | superScript | subScript | atNotation |
-      paren | symbol | marco | superMarco |
+      wrapper | symbol | marco | superMarco |
       (numericChunk | symbolicChunk | characterChunk)
 
   // Used for the arguments to super and sub scripts.
   lazy val scriptExpr: PackratParser[MathExpr] =
-    paren | symbol | marco | superMarco |
+    wrapper | symbol | marco | superMarco |
       (numericChunk | symbolicChunk | characterChunk)
 
-  lazy val noCommaExpr: PackratParser[MathExpr] = expr.flatMap{
+  lazy val noCommaExpr: PackratParser[MathExpr] = expr flatMap {
     case Chunk(s) if s.contains(",") => failure("no commas allowed")
     case a => success(a)
   }
 
-  lazy val symbolicChunk: PackratParser[Chunk] = "[^()@!:#;/_\\ ^a-zA-Z0-9]+".r ^^ Chunk
-  lazy val characterChunk: PackratParser[Chunk] = "[a-zA-Z]+".r ^^ Chunk
-  lazy val numericChunk: PackratParser[Chunk] = "-?[0-9.]+".r ^^ Chunk
+  lazy val symbolicChunk: PackratParser[Chunk] = positioned(
+    "[^(){}\\[\\]@!:#;/_\\ ^a-zA-Z0-9]+".r ^^ Chunk
+  )
+  lazy val characterChunk: PackratParser[Chunk] = positioned(
+    "[a-zA-Z]+".r ^^ Chunk
+  )
+  lazy val numericChunk: PackratParser[Chunk] = positioned(
+    "-?[0-9.]+".r ^^ Chunk
+  )
 
-  lazy val symbol: PackratParser[Symbol] = ":" ~> "[a-zA-Z]+".r ^^ Symbol
+  lazy val symbol: PackratParser[Symbol] = positioned(
+    ":" ~> "[a-zA-Z]+".r ^^ Symbol
+  )
 
-  lazy val comment: PackratParser[Comment] = "#" ~> "[^\\n]*".r <~ "$".r ^^ Comment
+  lazy val comment: PackratParser[Comment] = positioned(
+    "#" ~> "[^\\n]*".r <~ "$".r ^^ Comment
+  )
 
-  lazy val paren: PackratParser[Paren] = "(" ~> expr.* <~ ")" ^^ Paren
+  lazy val paren: PackratParser[Paren] = positioned(
+    "(" ~> expr.* <~ ")" ^^ Paren
+  )
 
-  lazy val commaSep: PackratParser[Seq[Seq[MathExpr]]] = noCommaExpr.* ~ ("," ~> noCommaExpr.*).* ^^ cons
+  lazy val brace: PackratParser[Brace] = positioned(
+    "{" ~> expr.* <~ "}" ^^ Brace
+  )
 
-  lazy val marco: PackratParser[Macro] = "!" ~> "[a-zA-Z]+".r ~ "(" ~ commaSep <~ ")" ^^ middle(Macro)
+  lazy val bracket: PackratParser[Bracket] = positioned(
+    "[" ~> expr.* <~ "]" ^^ Bracket
+  )
 
-  lazy val semiSep: PackratParser[Seq[Seq[Seq[MathExpr]]]] = commaSep ~ (";" ~> commaSep).* ^^ cons
+  lazy val wrapper: PackratParser[Wrapper] = paren | brace | bracket
 
-  lazy val superMarco: PackratParser[SuperMacro] = "!" ~> "[a-zA-Z]+".r ~ "(" ~ semiSep <~ ")" ^^ middle(SuperMacro)
+  lazy val commaSep: PackratParser[Seq[Seq[MathExpr]]] =
+    noCommaExpr.* ~ ("," ~> noCommaExpr.*).* ^^ cons
 
-  lazy val superScript: PackratParser[SuperScript] = expr ~ "^" ~ scriptExpr ^^ middle(SuperScript)
+  lazy val marco: PackratParser[Macro] = positioned(
+    "!" ~> "[a-zA-Z]+".r ~ "(" ~ commaSep <~ ")" ^^ middle(Macro)
+  )
 
-  lazy val subScript: PackratParser[SubScript] = expr ~ "_" ~ scriptExpr ^^ middle(SubScript)
+  lazy val semiSep: PackratParser[Seq[Seq[Seq[MathExpr]]]] =
+    commaSep ~ (";" ~> commaSep).* ^^ cons
 
-  lazy val atNotation: PackratParser[Macro] = expr ~ "@" ~ characterChunk ^^ middle((a, b) => Macro(b.contents, Seq(Seq(a))))
+  lazy val superMarco: PackratParser[SuperMacro] = positioned(
+    "!" ~> "[a-zA-Z]+".r ~ "(" ~ semiSep <~ ")" ^^ middle(SuperMacro)
+  )
 
-  lazy val overDiv: PackratParser[OverDiv] = expr ~ "/" ~ expr ^^ middle(OverDiv)
+  lazy val superScript: PackratParser[SuperScript] = positioned(
+    expr ~ "^" ~ scriptExpr ^^ middle(SuperScript)
+  )
 
-  lazy val sideDiv: PackratParser[SideDiv] = expr ~ "//" ~ expr ^^ middle(SideDiv)
+  lazy val subScript: PackratParser[SubScript] = positioned(
+    expr ~ "_" ~ scriptExpr ^^ middle(SubScript)
+  )
 
-  def parse(input: String, alignOn: Option[MathExpr] = None): Try[Seq[MathExpr]] = {
-    val rawLines = input.trim.split("\n")
-    joinLines(rawLines).flatMap { joinedLines =>
-      val lineTries = joinedLines.map(parseLine(_, alignOn))
-      if (lineTries.forall(_.isSuccess)) {
-        val lineResults = lineTries.map(_.get)
-        val resultsWithNewlines = lineResults.map(Newline +: _)
-        val joinedResult = (List[MathExpr]() /: resultsWithNewlines)(_ ++ _)
-        scala.util.Success(joinedResult.drop(1))
-      } else {
-        lineTries.dropWhile(_.isSuccess).head
-      }
-    }
-  }
+  lazy val atNotation: PackratParser[Macro] = positioned(
+    expr ~ "@" ~ characterChunk ^^ middle((a, b) => Macro(b.contents, Seq(Seq(a))))
+  )
 
-  private def joinLines(lines: Seq[String]): Try[Seq[String]] = lines match {
-    case Seq(first, second, tail @ _ *) =>
-      if (first.endsWith("\\"))
-        joinLines((first.dropRight(1) + second) +: tail)
-      else
-        joinLines(second +: tail).map(first +: _)
-    case Seq(head) =>
-      if (head.endsWith("\\"))
-        scala.util.Failure(new ParseException("no succeeding line to join to", head, ""))
-      else
-        scala.util.Success(head :: Nil)
-    case Seq() =>
-      scala.util.Success(Nil)
-  }
+  lazy val overDiv: PackratParser[OverDiv] = positioned(
+    expr ~ "/" ~ expr ^^ middle(OverDiv)
+  )
 
-  private def parseLine(line: String, alignOn: Option[MathExpr]): Try[Seq[MathExpr]] = {
-    val psr = new PagedSeqReader(PagedSeq.fromStrings(List(line)))
+  lazy val sideDiv: PackratParser[SideDiv] = positioned(
+    expr ~ "//" ~ expr ^^ middle(SideDiv)
+  )
+
+  def parseLine(line: LogicalLine): Result[Seq[MathExpr]] = {
+    val psr = new PagedSeqReader(PagedSeq.fromStrings(List(line.toString())))
     val pr = new PackratReader(psr)
-    if (line.forall(_.isWhitespace)) {
-      scala.util.Failure(new ParseException("empty line", line, ""))
+    if (line.toString.forall(_.isWhitespace)) {
+      Left(MathCompiler.Failure("empty line", None, line.offset(0)))
     } else {
       parse(phrase(expr.+), pr) match {
-        case Success(result, next) => validateAlignment(result, alignOn)
-        case NoSuccess(msg, next) => scala.util.Failure(new ParseException(msg, line, next))
+        case Success(result, next) =>
+          Right(result)
+        case failure: NoSuccess =>
+          Left(MathCompiler.Failure("parse failed: " + failure.msg, Some(failure), line.offset(failure.next.offset)))
       }
     }
   }
 
-  /* TODO: this should probably be a stage that manipulates the AST */
-  private def validateAlignment(line: Seq[MathExpr], alignOn: Option[MathExpr]): Try[Seq[MathExpr]] = alignOn match {
-    case Some(alignExpr) =>
-      val aligners = line.zipWithIndex.filter {
-        case (`alignExpr`, _) => true
-        case _ => false
+  /*
+   * Adaptation of RegexParsers.positioned to accommodate left recursive rules with PackratParsers.
+   * TODO: is there a cleaner way to accomplish this?
+   */
+  override def positioned[T <: Positional](p: => Parser[T]): Parser[T] = {
+    val pp = parser2packrat(super[PackratParsers].positioned(p))
+    new Parser[T] {
+      def apply(in: Input): ParseResult[T] = {
+        val offset = in.offset
+        val start = handleWhiteSpace(in.source, offset)
+        pp(in.drop(start - offset))
       }
-      if (aligners.length == 1) {
-        val index = aligners.head._2
-        val replaced = line.slice(0, index) ++ (Align(alignExpr) +: line.slice(index + 1, line.length))
-        scala.util.Success(replaced)
-      } else {
-        scala.util.Failure(new ParseException("invalid aligner count", line, ""))
-      }
-    case None =>
-      scala.util.Success(line)
+    }
   }
 }
