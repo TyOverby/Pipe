@@ -86,7 +86,7 @@ private[math] object MathParser extends RegexParsers with PackratParsers {
   def parseLine(line: LogicalLine): Result[Seq[MathExpr]] = {
     val psr = new PagedSeqReader(PagedSeq.fromStrings(List(line.toString())))
     val pr = new PackratReader(psr)
-    if (line.forall(_.isWhitespace)) {
+    if (line.toString.forall(_.isWhitespace)) {
       Left(MathCompiler.Failure("empty line", None, line.offset(0)))
     } else {
       parse(phrase(expr.+), pr) match {

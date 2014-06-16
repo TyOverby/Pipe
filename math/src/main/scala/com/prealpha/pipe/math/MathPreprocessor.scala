@@ -11,13 +11,13 @@ private[math] object MathPreprocessor {
 
   private def join(lines: Seq[LogicalLine]): Seq[Result[LogicalLine]] = lines match {
     case Seq(first, second, tail @ _ *) =>
-      if (first.endsWith("\\"))
+      if (first.toString.endsWith("\\"))
         join((first + second) +: tail)
       else
         Right(first) +: join(second +: tail)
     case Seq(line) =>
-      if (line.endsWith("\\"))
-        Seq(Left(Failure("preprocessor error: no lines remaining to join to", None, line.offset(line.length - 1))))
+      if (line.toString.endsWith("\\"))
+        Seq(Left(Failure("preprocessor error: no lines remaining to join to", None, line.offset(line.toString.length - 1))))
       else
         Seq(Right(line))
     case Seq() =>

@@ -71,7 +71,7 @@ object MathCompiler {
       }
     else
       preprocessed.head.right flatMap { line =>
-        Left(Failure("alignToken is not a single logical line", None, line.offset(line.length - 1)))
+        Left(Failure("alignToken is not a single logical line", None, line.offset(line.toString.length - 1)))
       }
   }
 }
