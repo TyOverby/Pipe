@@ -1,173 +1,166 @@
 package com.prealpha.pipe.math
 
+import com.prealpha.pipe.math.MathCompiler.{Failure, Result}
+
 private[math] object MathCodeGenerator {
-  def genEntire(exprs: Seq[MathExpr]): String = {
-    val sb = new StringBuilder
-    genMulti(exprs)(sb)
-    sb.toString()
+  def generate(expr: MathExpr): Result[String] = generate(expr, dropParens = false)
+
+  private def generate(expr: MathExpr, dropParens: Boolean): Result[String] = expr match {
+    case Chunk("...") => Right("\\hdots")
+    case Chunk("*") => Right("\\times")
+    case Chunk("!=") => Right("\\neq")
+    case Chunk(">=") => Right("\\geq")
+    case Chunk("<=") => Right("\\leq")
+    case Chunk(s) => Right(s)
+
+    case Symbol("not") => Right("\\lnot")
+    case Symbol("or") => Right("\\lor")
+    case Symbol("and") => Right("\\land")
+    case Symbol("xor") => Right("\\oplus")
+    case Symbol(s) => Right("\\" + s)
+
+    case Comment(s) =>
+      Right(s"&& \\text{$s}")
+
+    case Align(o) =>
+      generate(o).right map { aligner =>
+        s"&$aligner"
+      }
+
+    case Wrapper(xs, left, right) =>
+      val contents = xs map generate
+      if (contents forall (_.isRight)) {
+        val result = contents map (_.right.get) mkString " "
+        if (dropParens)
+          Right(result)
+        else
+          Right(s"\\left$left $result \\right$right")
+      } else {
+        (contents filter (_.isLeft)).head
+      }
+
+    case m: Macro =>
+      genMacro(m)
+
+    case m: SuperMacro =>
+      genSuperMacro(m)
+
+    case SuperScript(normal, over) =>
+      generate(normal).right flatMap { normalStr =>
+        generate(over, dropParens = true).right map { overStr =>
+          s"{$normalStr}^{$overStr}"
+        }
+      }
+
+    case SubScript(normal, under) =>
+      generate(normal).right flatMap { normalStr =>
+        generate(under, dropParens = true).right map { underStr =>
+          s"{$normalStr}_{$underStr}"
+        }
+      }
+
+    case OverDiv(numer, denom) =>
+      generate(numer, dropParens = true).right flatMap { numerStr =>
+        generate(denom, dropParens = true).right map { denomStr =>
+          s"\\dfrac{$numerStr}{$denomStr}"
+        }
+      }
+
+    case SideDiv(numer, denom) =>
+      generate(numer).right flatMap { numerStr =>
+        generate(denom).right map { denomStr =>
+          s"$numerStr / $denomStr"
+        }
+      }
   }
 
-  private def genMulti(exprs: Seq[MathExpr])(implicit builder: StringBuilder) {
-    if (exprs.isEmpty) {
-      return
-    }
-    exprs.init.foreach {
-      case Newline =>
-        genSingle(Newline)
-      case e =>
-        genSingle(e)
-        builder.append(" ")
-    }
-
-    genSingle(exprs.last)
-  }
-
-  private def genSingle(expr: MathExpr)(implicit sb: StringBuilder) {
-    expr match {
-      case Chunk("...") => sb ++= "\\hdots"
-      case Chunk("*") => sb ++= "\\times"
-      case Chunk("!=") => sb ++= "\\neq"
-      case Chunk(">=") => sb ++= "\\geq"
-      case Chunk("<=") => sb ++= "\\leq"
-      case Chunk(s) => sb ++= s
-      case Symbol("not") => sb ++= "\\lnot"
-      case Symbol("or") => sb ++= "\\lor"
-      case Symbol("and") => sb ++= "\\land"
-      case Symbol("xor") => sb ++= "\\oplus"
-      case Symbol(s) => sb ++= "\\" ++= s
-      case Comment(s) => sb ++= "&& " ++= "\\text{" ++= s ++= "}"
-      case Align(o) => sb ++= "&"; genSingle(o)
-      case Paren(xs) =>
-        sb ++= "\\left( "
-        genMulti(xs)
-        sb ++= " \\right)"
-      case Brace(xs) =>
-        sb ++= "\\left\\{ "
-        genMulti(xs)
-        sb ++= " \\right\\}"
-      case Bracket(xs) =>
-        sb ++= "\\left[ "
-        genMulti(xs)
-        sb ++= " \\right]"
-      case m: Macro => sb ++= genMacro(m)
-      case m: SuperMacro => sb ++= genSuperMacro(m)
-      case SuperScript(normal, Paren(overs)) =>
-        sb ++= "{"
-        genSingle(normal)
-        sb ++= "}^{"
-        genMulti(overs)
-        sb ++= "}"
-      case SuperScript(normal, over) =>
-        sb ++= "{"
-        genSingle(normal)
-        sb ++= "}^{"
-        genSingle(over)
-        sb ++= "}"
-      case SubScript(normal, Paren(unders)) =>
-        sb ++= "{"
-        genSingle(normal)
-        sb ++= "}_{"
-        genMulti(unders)
-        sb ++= "}"
-      case SubScript(normal, under) =>
-        sb ++= "{"
-        genSingle(normal)
-        sb ++= "}_{"
-        genSingle(under)
-        sb ++= "}"
-      case OverDiv(Paren(xs), Paren(ys)) =>
-        sb ++= "\\dfrac{"
-        genMulti(xs)
-        sb ++= "}{"
-        genMulti(ys)
-        sb ++= "}"
-      case OverDiv(Paren(xs), denom) =>
-        sb ++= "\\dfrac{"
-        genMulti(xs)
-        sb ++= "}{"
-        genSingle(denom)
-        sb ++= "}"
-      case OverDiv(numer, Paren(ys)) =>
-        sb ++= "\\dfrac{"
-        genSingle(numer)
-        sb ++= "}{"
-        genMulti(ys)
-        sb ++= "}"
-      case OverDiv(numer, denom) =>
-        sb ++= "\\dfrac{"
-        genSingle(numer)
-        sb ++= "}{"
-        genSingle(denom)
-        sb ++= "}"
-      case SideDiv(numer, denom) =>
-        genSingle(numer)
-        sb ++= " / "
-        genSingle(denom)
-      case Newline =>
-        sb ++= "\\\\\n"
-    }
-  }
-
-  private def genMacro(m: Macro): String = {
+  private def genMacro(m: Macro): Result[String] = {
     val easyMap = Map("sum" -> "sum", "prod" -> "prod",
       "product" -> "prod",
       "integral" -> "int", "int" -> "int")
 
     def isActuallySuper(name: String): Boolean = {
-        val superNames = Set("cases", "matrix")
-        superNames.contains(name) || name.endsWith("matrix")
+      val superNames = Set("cases", "matrix")
+      superNames.contains(name) || name.endsWith("matrix")
     }
 
-    (m.name, m.c.map(genEntire)) match {
-      case ("sqrt", List(contents)) => s"\\sqrt{$contents}"
-      case ("sqrt", _) => throw new ParseException("!sqrt(...) takes one argument", "", "")
+    val results = m.c map (_ map generate)
+    if (results forall (_ forall (_.isRight))) {
+      (m.name, results map (_ map (_.right.get) mkString " ")) match {
+        case ("sqrt", List(contents)) =>
+          Right(s"\\sqrt{$contents}")
+        case ("sqrt", _) =>
+          Left(Failure("!sqrt(...) takes one argument", None, (m.pos.line, m.pos.column)))
 
-      case (s, List()) if easyMap.contains(s) => s"\\${easyMap(s)}"
-      case (s, List(lower)) if easyMap.contains(s) => s"\\${easyMap(s)}_{$lower}"
-      case (s, List(lower, upper)) if easyMap.contains(s) => s"\\${easyMap(s)}_{$lower}^{$upper}"
-      case (s, _) if easyMap.contains(s) => throw new ParseException(s"!$s(...) takes either 0, 1, or 2 arguments.", "", "")
+        case (s, List()) if easyMap.contains(s) =>
+          Right(s"\\${easyMap(s)}")
+        case (s, List(lower)) if easyMap.contains(s) =>
+          Right(s"\\${easyMap(s)}_{$lower}")
+        case (s, List(lower, upper)) if easyMap.contains(s) =>
+          Right(s"\\${easyMap(s)}_{$lower}^{$upper}")
+        case (s, _) if easyMap.contains(s) =>
+          Left(Failure(s"!$s(...) takes either 0, 1, or 2 arguments.", None, (m.pos.line, m.pos.column)))
 
-      case ("limit", List())  => "\\lim"
-      case ("limit", List(under)) => s"\\lim_{$under}"
-      case ("limit", List(varx, bound)) => s"\\lim_{$varx \\to $bound}"
-      case ("limit", _) => throw new ParseException("!limit(...) takes either 0, 1, or 2 arguments.", "", "")
+        case ("limit", List()) =>
+          Right("\\lim")
+        case ("limit", List(under)) =>
+          Right(s"\\lim_{$under}")
+        case ("limit", List(varx, bound)) =>
+          Right(s"\\lim_{$varx \\to $bound}")
+        case ("limit", _) =>
+          Left(Failure("!limit(...) takes either 0, 1, or 2 arguments.", None, (m.pos.line, m.pos.column)))
 
-      case ("vector", List(contents)) => s"\\vec{$contents}"
-      case ("vec", List(contents)) => s"\\vec{$contents}"
+        case ("vector", List(contents)) =>
+          Right(s"\\vec{$contents}")
+        case ("vec", List(contents)) =>
+          Right(s"\\vec{$contents}")
 
-      case ("hat", List(contents)) => s"\\hat{$contents}"
+        case ("hat", List(contents)) =>
+          Right(s"\\hat{$contents}")
 
-      case ("floor", List(contents)) => s"\\left \\lfloor{$contents}\\right \\rfloor"
-      case ("ceil", List(contents)) => s"\\left \\lceil{$contents}\\right \\rceil"
-      case ("set", elements) => s"\\left\\{${elements.mkString(", ")}\\right\\}"
+        case ("floor", List(contents)) =>
+          Right(s"\\left \\lfloor{$contents}\\right \\rfloor")
+        case ("ceil", List(contents)) =>
+          Right(s"\\left \\lceil{$contents}\\right \\rceil")
+        case ("set", elements) =>
+          Right(s"\\left\\{ ${elements.mkString(", ")} \\right\\}")
 
-      case (name, _) if isActuallySuper(name) => genSuperMacro(SuperMacro(name, Seq(m.c)))
+        case (name, _) if isActuallySuper(name) =>
+          genSuperMacro(SuperMacro(name, Seq(m.c)))
 
-      case _ => throw new ParseException(s"No pattern found for macro ${m.name}", "", "")
+        case _ =>
+          Left(Failure(s"No pattern found for macro ${m.name}", None, (m.pos.line, m.pos.column)))
+      }
+    } else {
+      (results.flatten filter (_.isLeft)).head
     }
   }
 
-  private def genSuperMacro(m: SuperMacro): String = {
-    def matrixGen(ident: String, rows: Seq[Seq[String]]): String = {
+  private def genSuperMacro(m: SuperMacro): Result[String] = {
+    def matrixGen(ident: String, rows: Seq[Seq[String]]): Result[String] = {
       val flatRows = rows.map(_.mkString(" & "))
       val rowsStr = flatRows.mkString(" \\\\\n")
-      s"\\begin{${ident}matrix}\n$rowsStr\n\\end{${ident}matrix}"
+      Right(s"\\begin{${ident}matrix}\n$rowsStr\n\\end{${ident}matrix}")
     }
 
-    (m.name, m.c.map(_.map(genEntire))) match {
-      case ("cases", cases) =>
-        if (cases.exists(_.length != 2))
-          throw new ParseException("Incorrect usage of cases macro. " +
-            "Contains an argument list that is not 2 arguments long","","")
-
-        cases.map(_.mkString(" & "))
-             .mkString("\\begin{cases}\n", " \\\n", "\n\\end{cases}")
-      case ("matrix", rows) => matrixGen("b", rows)
-      case ("pmatrix", rows) => matrixGen("p", rows)
-      case ("bmatrix", rows) => matrixGen("b", rows)
-      case ("Bmatrix", rows) => matrixGen("B", rows)
-      case ("vmatrix", rows) => matrixGen("v", rows)
-      case ("Vmatrix", rows) => matrixGen("V", rows)
+    val results = m.c map (_ map (_ map generate))
+    if (results forall (_ forall (_ forall (_.isRight)))) {
+      val contents = results map (_ map (_ map (_.right.get) mkString " "))
+      (m.name, contents) match {
+        case ("cases", cases) =>
+          if (cases exists (_.length != 2))
+            Left(Failure("Incorrect usage of cases macro; contains an argument list that is not 2 arguments long.", None, (m.pos.line, m.pos.column)))
+          else
+            Right((cases map (_ mkString " & ")).mkString("\\begin{cases}\n", " \\\n", "\n\\end{cases}"))
+        case ("matrix", rows) => matrixGen("b", rows)
+        case ("pmatrix", rows) => matrixGen("p", rows)
+        case ("bmatrix", rows) => matrixGen("b", rows)
+        case ("Bmatrix", rows) => matrixGen("B", rows)
+        case ("vmatrix", rows) => matrixGen("v", rows)
+        case ("Vmatrix", rows) => matrixGen("V", rows)
+      }
+    } else {
+      ((results map (_.flatten)).flatten filter (_.isLeft)).head
     }
   }
 }
