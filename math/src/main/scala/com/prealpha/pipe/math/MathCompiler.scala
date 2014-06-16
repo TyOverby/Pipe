@@ -52,7 +52,13 @@ object MathCompiler {
       else
         Left(gathered filter (_.isLeft) map (_.left.get) flatten)
     } else {
-      Left(generated filter (_.isLeft) map (_.left.get))
+      val failures = generated map {
+        case Right(exprResults) =>
+          exprResults filter (_.isLeft) map (_.left.get)
+        case Left(failure) =>
+          Seq(failure)
+      }
+      Left(failures.flatten)
     }
   }
 
