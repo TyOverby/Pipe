@@ -5,7 +5,7 @@ import com.prealpha.pipe.math.MathCompiler.{Failure, Result}
 private[math] object AlignmentValidator {
   def validateAlignment(alignOn: Option[MathExpr])(line: Seq[MathExpr]): Result[Seq[MathExpr]] = alignOn match {
     case Some(alignExpr) =>
-      val aligners = line.zipWithIndex.filter {
+      val aligners = line.zipWithIndex filter {
         case (`alignExpr`, _) => true
         case _ => false
       }

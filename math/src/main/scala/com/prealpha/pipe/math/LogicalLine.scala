@@ -9,7 +9,7 @@ private[math] class LogicalLine private (
   def offset(index: Int): (Int, Int) = {
     val priorBreaks = breaks filter (_ <= index)
     val line = priorBreaks.size + startingAt
-    val col = index - priorBreaks.reduceOption(_ max _).getOrElse(0) + 1
+    val col = index - (priorBreaks reduceOption (_ max _)).getOrElse(0) + 1
     (line, col)
   }
 

@@ -44,7 +44,7 @@ object MathCompiler {
         val generated = aligned.right map (_ map MathCodeGenerator.generate)
         (generated.left map (Seq(_))).right flatMap { exprResults =>
           if (exprResults forall (_.isRight)) {
-            Right(exprResults.map(_.right.get) mkString " ")
+            Right(exprResults map (_.right.get) mkString " ")
           } else {
             Left(exprResults filter (_.isLeft) map (_.left.get) map { failure =>
               val line = failure.offset._1 + ll.offset(0)._1 - 1
@@ -62,7 +62,7 @@ object MathCompiler {
 
   private def parseToken(token: String): Result[MathExpr] = {
     val preprocessed = MathPreprocessor.preprocess(token)
-    if (preprocessed.length == 1)
+    if (preprocessed.length == 1) {
       preprocessed.head.right flatMap { line =>
         MathParser.parseLine(line).right flatMap { result =>
           if (result.length == 1)
@@ -71,9 +71,10 @@ object MathCompiler {
             Left(Failure("alignToken is not a single token", None, line.offset(0)))
         }
       }
-    else
+    } else {
       preprocessed.head.right flatMap { line =>
         Left(Failure("alignToken is not a single logical line", None, line.offset(line.toString.length - 1)))
       }
+    }
   }
 }
